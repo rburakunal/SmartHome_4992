@@ -1,0 +1,20 @@
+Install: Expo Go (mobile), git, node.js, cursor IDE
+
+after clone: npm install
+
+running:
+npx expo start
+scan the QR in mobile
+
+Git Usage:
+- git checkout -b feature/name-of-feature (new branch)
+- git branch (check which branch you are in)
+make changes...
+- git fetch origin (updates remote)
+- git pull origin main (pull code from main)
+- git add . (stages changed files)
+- git commit -m "changes you made"
+- son olarak bir daha fetch, pull
+- git push origin feature/name-of-feature
+
+- always check files on: git status
