@@ -6,16 +6,17 @@ import User from '../models/User';
 const JWT_SECRET = process.env.JWT_SECRET || 'gizliAnahtar';
 
 export const register = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  const { username, email, password } = req.body;
 
   try {
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
-      return res.status(400).json({ message: 'Bu email zaten kayıtlı.' });
+      return res.status(400).json({ message: 'Bu kullanıcı adı veya email zaten kayıtlı.' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({
+      username,
       email,
       password: hashedPassword,
       role: 'user',

@@ -4,10 +4,12 @@ import mongoose from 'mongoose';
 import './services/mqttService';
 
 import SensorData from './models/SensorData';
+import alertRoutes from './routes/alertRoutes';
 import authRoutes from './routes/authRoutes';
 import deviceRoutes from './routes/deviceRoutes';
 import userRoutes from './routes/userRoutes';
 import veriRoutes from './routes/veriRoutes';
+
 
 dotenv.config();
 
@@ -17,6 +19,10 @@ app.use(express.json());
 // ROUTE Tanımları
 app.use('/auth', authRoutes);
 console.log("🔐 /auth route'u yüklendi");
+
+app.use('/alertlar', alertRoutes);
+console.log("🚨 /alertlar route'u yüklendi");
+
 
 app.use('/cihaz', deviceRoutes);
 console.log("🔌 /cihaz route'u yüklendi");
@@ -47,6 +53,10 @@ app.get('/veri', async (_req, res) => {
     res.status(500).send("Sunucu hatası");
   }
 });
+app.get('/test-direct', (_req, res) => {
+  res.send('✅ Direkt test route çalıştı!');
+});
+
 
 // MongoDB bağlantısı
 mongoose.connect(process.env.MONGO_URI || '', {
