@@ -1,9 +1,15 @@
 import dotenv from "dotenv";
 import mqtt from "mqtt";
-import Alert from "../models/Alert"; // ✅ Alert modeli eklendi
+import Alert from "../models/Alert";
 import Device from "../models/Device";
 import DeviceLog from "../models/DeviceLog";
 import SensorData from "../models/SensorData";
+
+// ✅ global.io için tip tanımı (Socket.IO global tanımı)
+import type { Server as SocketIOServer } from 'socket.io';
+declare global {
+  var io: SocketIOServer;
+}
 
 dotenv.config();
 
@@ -28,18 +34,14 @@ client.on("message", async (topic, message) => {
     const parsed = JSON.parse(message.toString());
     const topicParts = topic.split("/");
 
-    // 👉 Sensor datasıysa veritabanına kaydet
+    // 👉 Sensör verisi
     if (topic.includes("sensor")) {
       const type = topicParts[2] || "unknown";
-      const data = {
-        topic,
-        type,
-        value: parsed
-      };
+      const data = { topic, type, value: parsed };
       await SensorData.create(data);
       console.log(`[MQTT] Sensör verisi kaydedildi → ${type}:`, parsed);
 
-      // ✅ OTOMASYON: SICAKLIK > 30 → FAN ON
+      // ✅ FAN Otomasyonu (sicaklik > 30)
       if (type === "sicaklik" && parsed?.deger > 30) {
         try {
           const fanDevice = await Device.findOne({ name: /fan/i });
@@ -58,15 +60,19 @@ client.on("message", async (topic, message) => {
               action: "on",
               triggeredBy: "automation"
             });
-          } else {
-            console.log("[OTOMASYON] FAN cihazı bulunamadı.");
+
+            // 🔔 Emit cihaz durumu (otomasyon)
+            global.io.emit("cihaz-durum-guncelleme", {
+              deviceId: fanDevice._id,
+              action: "on"
+            });
           }
         } catch (err: any) {
           console.error("[OTOMASYON] FAN açma hatası:", err.message);
         }
       }
 
-      // ✅ ALERT: GAZ
+      // ✅ Gaz alarmı
       if (type === "gaz" && parsed?.deger === 1) {
         await Alert.create({
           type: "gaz",
@@ -76,7 +82,7 @@ client.on("message", async (topic, message) => {
         console.log("🚨 Gaz alarmı oluşturuldu!");
       }
 
-      // ✅ ALERT: DUMAN
+      // ✅ Duman alarmı
       if (type === "duman" && parsed?.deger === 1) {
         await Alert.create({
           type: "duman",
@@ -87,7 +93,7 @@ client.on("message", async (topic, message) => {
       }
     }
 
-    // 👉 Device kontrolü geldiyse cihaz status'ünü güncelle
+    // 👉 Cihaz komutu (örneğin: /cihaz/kontrol üzerinden)
     if (topic.includes("device")) {
       const deviceId = topicParts[2];
       const action = parsed?.action;
@@ -95,6 +101,12 @@ client.on("message", async (topic, message) => {
       if (deviceId && action) {
         await Device.findByIdAndUpdate(deviceId, { status: action });
         console.log(`[MQTT] Cihaz durumu güncellendi → ${deviceId}: ${action}`);
+
+        // 🔔 Emit cihaz durumu (manuel kontrol)
+        global.io.emit("cihaz-durum-guncelleme", {
+          deviceId,
+          action
+        });
       }
     }
   } catch (err: any) {

@@ -14,6 +14,8 @@ client.on("connect", () => {
   client.publish(topic, payload, () => {
     console.log(`📤 Yayın yapıldı → ${topic}: ${payload}`);
     console.log("🚨 Gaz alarmı test verisi gönderildi.");
+
+    // ✅ Real-time sistemde 'alert' oluşacak, log düşecek, socket yayını yapılacak
     client.end(); // Bağlantı kapatılır
   });
 });
