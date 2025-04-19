@@ -9,19 +9,74 @@ import {
   TouchableOpacity, 
   Text,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 import { router } from 'expo-router';
 import { Colors } from '../constants/Colors';
+import { authService } from '../service/api';
+import { API_CONFIG } from '../service/config';
 
 export default function SignUpScreen() {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSignUp = () => {
-    // For now, just navigate back to login screen
-    router.replace('/login');
+  const handleSignUp = async () => {
+    if (!username || !email || !password || !confirmPassword) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters long');
+      return;
+    }
+
+    // Show which API endpoint we're trying to connect to for debugging
+    console.log(`Attempting to register at: ${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.REGISTER}`);
+    
+    setIsLoading(true);
+    try {
+      // Real API call now that MongoDB access is fixed
+      await authService.register({ username, email, password });
+      Alert.alert(
+        'Success',
+        'Account created successfully! Please login.',
+        [{ text: 'OK', onPress: () => router.replace('/login') }]
+      );
+      
+      // Mock solution - kept as a comment in case needed again
+      /* 
+      setTimeout(() => {
+        Alert.alert(
+          'Success',
+          'Account created successfully! Please login.',
+          [{ text: 'OK', onPress: () => router.replace('/login') }]
+        );
+        setIsLoading(false);
+      }, 1500);
+      return;
+      */
+    } catch (error: any) {
+      console.error('Registration error details:', error);
+      
+      // More helpful error message
+      Alert.alert(
+        'Registration Failed',
+        `${error.message}\n\nPlease try again or contact support.`
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -42,6 +97,17 @@ export default function SignUpScreen() {
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
+              placeholder="Username"
+              value={username}
+              onChangeText={setUsername}
+              autoCapitalize="none"
+              placeholderTextColor="#666"
+              returnKeyType="next"
+              autoCorrect={false}
+              editable={!isLoading}
+            />
+            <TextInput
+              style={styles.input}
               placeholder="Email"
               value={email}
               onChangeText={setEmail}
@@ -51,6 +117,7 @@ export default function SignUpScreen() {
               returnKeyType="next"
               autoCorrect={false}
               textContentType="emailAddress"
+              editable={!isLoading}
             />
             <TextInput
               style={styles.input}
@@ -61,6 +128,7 @@ export default function SignUpScreen() {
               placeholderTextColor="#666"
               returnKeyType="next"
               textContentType="newPassword"
+              editable={!isLoading}
             />
             <TextInput
               style={styles.input}
@@ -72,16 +140,28 @@ export default function SignUpScreen() {
               returnKeyType="done"
               textContentType="newPassword"
               onSubmitEditing={handleSignUp}
+              editable={!isLoading}
             />
           </View>
 
-          <TouchableOpacity style={styles.signupButton} onPress={handleSignUp}>
-            <Text style={styles.signupButtonText}>Create Account</Text>
+          <TouchableOpacity 
+            style={[styles.signupButton, isLoading && styles.signupButtonDisabled]}
+            onPress={handleSignUp}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.signupButtonText}>Create Account</Text>
+            )}
           </TouchableOpacity>
           
           <View style={styles.loginContainer}>
             <Text style={styles.loginText}>Already have an account?</Text>
-            <TouchableOpacity onPress={() => router.replace('/login')}>
+            <TouchableOpacity 
+              onPress={() => router.replace('/login')}
+              disabled={isLoading}
+            >
               <Text style={styles.loginButton}>Sign In</Text>
             </TouchableOpacity>
           </View>
@@ -163,4 +243,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
   },
+  signupButtonDisabled: {
+    opacity: 0.7
+  }
 }); 

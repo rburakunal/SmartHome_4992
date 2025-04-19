@@ -1,11 +1,11 @@
-Install: Expo Go (mobile), git, node.js, cursor IDE
+Install: Expo Go (in your phone), git, node.js, cursor IDE
 
 
-(Open terminal in "mobile" folder)
+(In "backend" then "mobile" folders)
 npm install
 
-Running:
-npx expo start
+Run (In "mobile" folder):
+npm run dev
 scan the QR in mobile
 
 Git Usage:

@@ -1,39 +1,55 @@
-# Welcome to your Expo app 👋
+# Smart Home App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This is a smart home management application with a mobile frontend and backend server.
 
 ## Get started
 
-1. Install dependencies
+1. Install dependencies for both frontend and backend
 
    ```bash
+   # Install frontend dependencies
+   cd mobile
+   npm install
+
+   # Install backend dependencies
+   cd ../backend
    npm install
    ```
 
-2. Start the app
+2. Start the complete development environment (both backend and frontend)
 
    ```bash
-    npx expo start
+   # From the mobile directory
+   npm run dev
    ```
 
-In the output, you'll find options to open the app in a
+   This command will:
+   - Start the backend server first
+   - Wait until the backend is running
+   - Then automatically start the Expo development server
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+   You'll see logs from both systems in one terminal.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+3. Alternative: Start frontend and backend separately
 
-## Get a fresh project
+   If you prefer to run them in separate terminals:
 
-When you're ready, run:
+   ```bash
+   # Terminal 1 - Start backend
+   cd backend
+   npm run dev
 
-```bash
-npm run reset-project
-```
+   # Terminal 2 - Start frontend
+   cd mobile
+   npx expo start
+   ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Development Notes
+
+- The mobile app requires the backend server to be running
+- Backend server runs on port 5000
+- MongoDB Atlas is used for the database
+- API configuration is in `mobile/service/config.ts`
 
 ## Learn more
 
