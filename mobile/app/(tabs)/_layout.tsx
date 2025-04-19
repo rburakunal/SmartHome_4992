@@ -22,13 +22,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="control"
-        options={{
-          title: 'Control',
-          tabBarIcon: ({ color }: { color: string }) => <FontAwesome name="sliders" size={24} color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',
