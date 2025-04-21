@@ -14,9 +14,11 @@
   "description": "",
   "dependencies": {
     "aedes": "^0.51.3",
+    "bcrypt": "^5.1.1",
     "dotenv": "^16.5.0",
     "expo-server-sdk": "^3.14.0",
     "express": "^5.1.0",
+    "express-list-endpoints": "^7.1.1",
     "mongoose": "^8.13.2",
     "mosca": "^2.8.3",
     "mqtt": "^5.11.0",

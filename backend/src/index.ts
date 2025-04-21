@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import express from 'express';
+import listEndpoints from 'express-list-endpoints'; // ✅ 5. ADIM
 import http from 'http';
 import mongoose from 'mongoose';
 import { Server as SocketIOServer } from 'socket.io';
@@ -9,7 +10,7 @@ import SensorData from './models/SensorData';
 import alertRoutes from './routes/alertRoutes';
 import authRoutes from './routes/authRoutes';
 import deviceRoutes from './routes/deviceRoutes';
-import notificationRoutes from './routes/notificationRoutes'; // ✅ Yeni route
+import notificationRoutes from './routes/notificationRoutes';
 import userRoutes from './routes/userRoutes';
 import veriRoutes from './routes/veriRoutes';
 
@@ -78,6 +79,9 @@ mongoose.connect(process.env.MONGO_URI || '', {
 } as any)
   .then(() => console.log("✅ MongoDB bağlantısı başarılı"))
   .catch((err) => console.error("❌ MongoDB bağlantı hatası:", err));
+
+// ✅ 5. ADIM — Tüm endpoint'leri göster
+console.log("📋 Route listesi:", listEndpoints(app));
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {

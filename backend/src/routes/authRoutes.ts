@@ -1,3 +1,4 @@
+console.log("🛠 authRoutes dosyası yüklendi");
 import { Router } from 'express';
 import { login, register } from '../controllers/authController';
 
