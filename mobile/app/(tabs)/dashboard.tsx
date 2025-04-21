@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LineChart } from 'react-native-chart-kit';
+import Header from '@/components/Header';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface SensorData {
   movement: boolean;
@@ -22,6 +24,7 @@ interface SensorCardProps {
 }
 
 export default function DashboardScreen() {
+  const insets = useSafeAreaInsets();
   const [sensorData, setSensorData] = useState<SensorData>({
     movement: false,
     distance: 0,
@@ -68,79 +71,82 @@ export default function DashboardScreen() {
   );
 
   return (
-    <ScrollView 
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      <View style={styles.header}>
-        <Text style={styles.title}>Dashboard</Text>
-        <Text style={styles.subtitle}>Real-time sensor data</Text>
-      </View>
+    <View style={styles.container}>
+      <Header />
+      <ScrollView 
+        style={styles.scrollContainer}
+        contentContainerStyle={{ paddingBottom: insets.bottom }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <View style={styles.sensorSection}>
+          <Text style={styles.sectionTitle}>Real-time sensor data</Text>
+        </View>
 
-      <View style={styles.grid}>
-        <SensorCard
-          title="Temperature"
-          value={sensorData.temperature.toFixed(1)}
-          icon="thermometer"
-          unit="°C"
-          color="#FF9500"
-          trend="up"
-        />
-        
-        <SensorCard
-          title="Humidity"
-          value={sensorData.humidity.toFixed(1)}
-          icon="water"
-          unit="%"
-          color="#5856D6"
-          trend="stable"
-        />
+        <View style={styles.grid}>
+          <SensorCard
+            title="Temperature"
+            value={sensorData.temperature.toFixed(1)}
+            icon="thermometer"
+            unit="°C"
+            color="#FF9500"
+            trend="up"
+          />
+          
+          <SensorCard
+            title="Humidity"
+            value={sensorData.humidity.toFixed(1)}
+            icon="water"
+            unit="%"
+            color="#5856D6"
+            trend="stable"
+          />
 
-        <SensorCard
-          title="Gas Level"
-          value={sensorData.gasLevel.toFixed(1)}
-          icon="warning"
-          unit=" ppm"
-          color={sensorData.gasLevel > 100 ? "#FF3B30" : "#34C759"}
-          trend="down"
-        />
+          <SensorCard
+            title="Gas Level"
+            value={sensorData.gasLevel.toFixed(1)}
+            icon="warning"
+            unit=" ppm"
+            color={sensorData.gasLevel > 100 ? "#FF3B30" : "#34C759"}
+            trend="down"
+          />
 
-        <SensorCard
-          title="Movement"
-          value={sensorData.movement ? "Detected" : "No Movement"}
-          icon="walk"
-          color={sensorData.movement ? "#FF3B30" : "#34C759"}
-        />
-      </View>
+          <SensorCard
+            title="Movement"
+            value={sensorData.movement ? "Detected" : "No Movement"}
+            icon="walk"
+            color={sensorData.movement ? "#FF3B30" : "#34C759"}
+          />
+        </View>
 
-      <View style={styles.chartContainer}>
-        <Text style={styles.chartTitle}>Temperature History</Text>
-        <LineChart
-          data={{
-            labels: ['1h', '2h', '3h', '4h', '5h', '6h'],
-            datasets: [{
-              data: temperatureHistory
-            }]
-          }}
-          width={Dimensions.get('window').width - 40}
-          height={220}
-          chartConfig={{
-            backgroundColor: '#ffffff',
-            backgroundGradientFrom: '#ffffff',
-            backgroundGradientTo: '#ffffff',
-            decimalPlaces: 1,
-            color: (opacity = 1) => `rgba(255, 149, 0, ${opacity})`,
-            style: {
-              borderRadius: 16
-            }
-          }}
-          style={styles.chart}
-          bezier
-        />
-      </View>
-    </ScrollView>
+        <View style={styles.chartContainer}>
+          <Text style={styles.chartTitle}>Temperature History</Text>
+          <LineChart
+            data={{
+              labels: ['1h', '2h', '3h', '4h', '5h', '6h'],
+              datasets: [{
+                data: temperatureHistory
+              }]
+            }}
+            width={Dimensions.get('window').width - 40}
+            height={220}
+            chartConfig={{
+              backgroundColor: '#ffffff',
+              backgroundGradientFrom: '#ffffff',
+              backgroundGradientTo: '#ffffff',
+              decimalPlaces: 1,
+              color: (opacity = 1) => `rgba(255, 149, 0, ${opacity})`,
+              style: {
+                borderRadius: 16
+              }
+            }}
+            style={styles.chart}
+            bezier
+          />
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -149,19 +155,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F2F2F7',
   },
-  header: {
+  scrollContainer: {
+    flex: 1,
+  },
+  sensorSection: {
     padding: 20,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
+    paddingTop: 10,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  subtitle: {
-    fontSize: 16,
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
     color: '#666',
   },
   grid: {

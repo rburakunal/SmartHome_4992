@@ -3,6 +3,7 @@ import { StyleSheet, View, ScrollView, TouchableOpacity, Text } from 'react-nati
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../../constants/Colors';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface SettingItemProps {
   title: string;
@@ -24,9 +25,14 @@ const SettingItem = ({ title, icon, onPress }: SettingItemProps) => (
 );
 
 export default function SettingsScreen() {
+  const insets = useSafeAreaInsets();
+  
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={{ paddingBottom: insets.bottom }}
+      >
         <SettingItem
           title="Account"
           icon="person-outline"
@@ -73,7 +79,7 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F2F2F7',
   },
   scrollView: {
     flex: 1,
@@ -85,6 +91,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
     justifyContent: 'space-between',
+    backgroundColor: '#fff',
   },
   settingItemContent: {
     flexDirection: 'row',
