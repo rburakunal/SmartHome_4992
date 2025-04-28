@@ -114,6 +114,6 @@ client.on("message", async (topic, message) => {
   }
 });
 
-client.on("error", (err) => {
-  console.error("❌ MQTT bağlantı hatası:", err.message);
-});
+// client.on("error", (err) => {
+//   console.error("❌ MQTT bağlantı hatası:", err.message);
+// });
