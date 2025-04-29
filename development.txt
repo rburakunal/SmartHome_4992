@@ -4,9 +4,17 @@ Install: Expo Go (in your phone), git, node.js, cursor IDE
 (In "backend" then "mobile" folders)
 npm install
 
+IMPORTANT CONFIGURATION STEPS:
+1. Open mobile/service/config.ts
+2. Set the BASE_URL to your local IP address:
+   BASE_URL: 'http://YOUR_IP_ADDRESS:3000'
+   (Replace YOUR_IP_ADDRESS with your actual IP)
+
 Run (In "mobile" folder):
 npm run dev
 scan the QR in mobile
+
+Note: The backend now runs on port 3000 instead of 5000 to avoid conflicts.
 
 Git Usage:
 - git checkout -b feature/name-of-feature (new branch)

@@ -16,7 +16,14 @@ This is a smart home management application with a mobile frontend and backend s
    npm install
    ```
 
-2. Start the complete development environment (both backend and frontend)
+2. **IMPORTANT: Configure your API connection**
+
+   Before starting the app, you must configure the API connection in `mobile/service/config.ts`:
+   - Open the file and set the `BASE_URL` to your local IP address
+   - For iOS physical devices with Expo Go, use: `http://YOUR_IP_ADDRESS:3000`
+   - Replace `YOUR_IP_ADDRESS` with your actual network IP address
+
+3. Start the complete development environment (both backend and frontend)
 
    ```bash
    # From the mobile directory
@@ -24,13 +31,13 @@ This is a smart home management application with a mobile frontend and backend s
    ```
 
    This command will:
-   - Start the backend server first
+   - Start the backend server first (on port 3000)
    - Wait until the backend is running
    - Then automatically start the Expo development server
 
    You'll see logs from both systems in one terminal.
 
-3. Alternative: Start frontend and backend separately
+4. Alternative: Start frontend and backend separately
 
    If you prefer to run them in separate terminals:
 
@@ -47,7 +54,7 @@ This is a smart home management application with a mobile frontend and backend s
 ## Development Notes
 
 - The mobile app requires the backend server to be running
-- Backend server runs on port 5000
+- Backend server runs on port 3000
 - MongoDB Atlas is used for the database
 - API configuration is in `mobile/service/config.ts`
 
