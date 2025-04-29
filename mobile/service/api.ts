@@ -54,24 +54,12 @@ export const authService = {
       // Store the token
       await AsyncStorage.setItem('auth_token', data.token);
       
-      // After successful login, get user info
-      try {
-        // Get user data using the token we just got
-        const userResponse = await api.get(
-          `${API_CONFIG.ENDPOINTS.USER}`,
-          { headers: { Authorization: `Bearer ${data.token}` } }
-        );
-        
-        // Store user info for offline access
-        if (userResponse.data && userResponse.data.length > 0) {
-          const userData = userResponse.data.find((user: any) => user.role === data.role);
-          if (userData) {
-            await AsyncStorage.setItem('userInfo', JSON.stringify(userData));
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch user data after login:', error);
-      }
+      // Store minimal user info to have something available offline
+      const minimalUserInfo = {
+        email: credentials.email,
+        role: data.role
+      };
+      await AsyncStorage.setItem('userInfo', JSON.stringify(minimalUserInfo));
       
       return data;
     } catch (error) {

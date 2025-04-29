@@ -9,7 +9,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { Colors } from '../../../constants/Colors';
 import Toast from '../../../components/Toast';
@@ -18,7 +17,7 @@ import { API_CONFIG } from '../../../service/config';
 import axios from 'axios';
 
 interface FormData {
-  name: string;
+  username: string;
   email: string;
   currentPassword: string;
   newPassword: string;
@@ -45,7 +44,7 @@ api.interceptors.request.use(async (config) => {
 
 export default function AccountSettings() {
   const [formData, setFormData] = useState<FormData>({
-    name: '',
+    username: '',
     email: '',
     currentPassword: '',
     newPassword: '',
@@ -62,32 +61,94 @@ export default function AccountSettings() {
     loadUserData();
   }, []);
 
-  const loadUserData = async () => {
+  // Get current user data with username from the update profile endpoint
+  const fetchUserData = async () => {
     try {
-      console.log(`Fetching user data from ${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.USER}/me`);
+      setLoading(true);
+      console.log('Fetching user data from API...');
       
-      const response = await api.get(`${API_CONFIG.ENDPOINTS.USER}/me`);
-      console.log('User data loaded:', JSON.stringify(response.data));
+      // Get current email from AsyncStorage first
+      const userInfoStr = await AsyncStorage.getItem('userInfo');
+      let currentEmail = '';
       
-      // The response directly contains the user object
-      const userData = response.data;
-      
-      if (!userData.username && !userData.email) {
-        console.error('API returned data but missing username/email:', userData);
-        showToastMessage('User data format is invalid', 'error');
-        return;
+      if (userInfoStr) {
+        try {
+          const userInfo = JSON.parse(userInfoStr);
+          currentEmail = userInfo.email || '';
+        } catch (err) {
+          console.error('Error parsing user info:', err);
+        }
       }
       
-      setFormData(prev => ({
-        ...prev,
-        name: userData.username || '',
-        email: userData.email || '',
-      }));
+      if (!currentEmail) {
+        console.error('No email found in storage, cannot fetch user data');
+        setLoading(false);
+        return null;
+      }
       
-      console.log('User data set:', userData.username, userData.email);
+      // Use the email update endpoint - this will return full user data
+      const response = await api.put(
+        `${API_CONFIG.ENDPOINTS.USER}/guncelle`,
+        { email: currentEmail }
+      );
+      
+      console.log('User data response:', JSON.stringify(response.data));
+      
+      if (response.data && response.data.user) {
+        // Save the complete user info to storage
+        await AsyncStorage.setItem('userInfo', JSON.stringify(response.data.user));
+        return response.data.user;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadUserData = async () => {
+    try {
+      console.log(`Attempting to load user data...`);
+      setLoading(true);
+      
+      // Try to fetch user data from API first
+      let userData = await fetchUserData();
+      
+      // If API failed, try to get stored data
+      if (!userData) {
+        const userInfoStr = await AsyncStorage.getItem('userInfo');
+        console.log('User info from storage:', userInfoStr);
+        
+        if (userInfoStr) {
+          userData = JSON.parse(userInfoStr);
+          
+          // If username is missing but we have email, extract username from email
+          if (!userData.username && userData.email) {
+            // Extract username as everything before @ in email
+            userData.username = userData.email.split('@')[0];
+          }
+        }
+      }
+      
+      if (userData) {
+        setFormData(prev => ({
+          ...prev,
+          username: userData.username || '',
+          email: userData.email || '',
+        }));
+        
+        console.log('Set user data:', userData.username, userData.email);
+      } else {
+        showToastMessage('Could not retrieve user information', 'error');
+      }
     } catch (error: any) {
-      console.error('Error loading user data:', error.response?.data || error.message);
+      console.error('Error loading user data:', error.message);
       showToastMessage('Failed to load user data', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -102,36 +163,54 @@ export default function AccountSettings() {
       setLoading(true);
 
       // Validate inputs
-      if (section === 'email' || section === 'password') {
-        if (!formData.currentPassword) {
-          showToastMessage('Current password is required', 'error');
-          return;
-        }
-      }
-
       if (section === 'password') {
         if (formData.newPassword !== formData.confirmPassword) {
           showToastMessage('New passwords do not match', 'error');
+          setLoading(false);
           return;
         }
         if (formData.newPassword.length < 6) {
           showToastMessage('Password must be at least 6 characters long', 'error');
+          setLoading(false);
           return;
         }
       }
 
-      const updateData = {};
+      const updateData: any = {};
+      
       if (section === 'email') {
-        Object.assign(updateData, { email: formData.email });
+        if (!formData.email) {
+          showToastMessage('Email is required', 'error');
+          setLoading(false);
+          return;
+        }
+        updateData.email = formData.email;
       } else if (section === 'password') {
-        Object.assign(updateData, { password: formData.newPassword });
+        if (!formData.newPassword) {
+          showToastMessage('New password is required', 'error');
+          setLoading(false);
+          return;
+        }
+        updateData.password = formData.newPassword;
       }
-      Object.assign(updateData, { currentPassword: formData.currentPassword });
 
-      await api.put(
+      console.log('Updating profile with data:', JSON.stringify(updateData));
+      
+      // Call backend updateProfile endpoint
+      const response = await api.put(
         `${API_CONFIG.ENDPOINTS.USER}/guncelle`,
         updateData
       );
+
+      console.log('Update response:', JSON.stringify(response.data));
+      
+      // Update local storage with updated user info
+      if (response.data.user) {
+        await AsyncStorage.setItem('userInfo', JSON.stringify(response.data.user));
+        
+        // Reload user data to reflect changes
+        loadUserData();
+      }
 
       showToastMessage(`${section.charAt(0).toUpperCase() + section.slice(1)} updated successfully`);
 
@@ -145,6 +224,7 @@ export default function AccountSettings() {
         }));
       }
     } catch (error: any) {
+      console.error('Error updating profile:', error);
       const errorMessage = error.response?.data?.message || 'An error occurred';
       showToastMessage(errorMessage, 'error');
     } finally {
@@ -154,20 +234,19 @@ export default function AccountSettings() {
 
   const renderDetailsSection = () => (
     <View style={styles.section}>
-      <Text style={styles.label}>Name</Text>
+      <Text style={styles.label}>Username</Text>
       <View style={styles.readOnlyField}>
         <Text style={styles.readOnlyText}>
-          {formData.name ? formData.name : 'Loading...'}
+          {formData.username || 'Loading...'}
         </Text>
       </View>
       <Text style={styles.label}>Email</Text>
       <View style={styles.readOnlyField}>
         <Text style={styles.readOnlyText}>
-          {formData.email ? formData.email : 'Loading...'}
+          {formData.email || 'Loading...'}
         </Text>
       </View>
       
-      {/* Debug button in development */}
       <TouchableOpacity 
         style={[styles.saveButton, { marginTop: 20 }]}
         onPress={loadUserData}
@@ -188,14 +267,6 @@ export default function AccountSettings() {
         keyboardType="email-address"
         autoCapitalize="none"
       />
-      <Text style={styles.label}>Current Password</Text>
-      <TextInput
-        style={styles.input}
-        value={formData.currentPassword}
-        onChangeText={(text) => setFormData(prev => ({ ...prev, currentPassword: text }))}
-        placeholder="Enter current password"
-        secureTextEntry
-      />
       <TouchableOpacity
         style={styles.saveButton}
         onPress={() => handleSave('email')}
@@ -207,14 +278,6 @@ export default function AccountSettings() {
 
   const renderPasswordSection = () => (
     <View style={styles.section}>
-      <Text style={styles.label}>Current Password</Text>
-      <TextInput
-        style={styles.input}
-        value={formData.currentPassword}
-        onChangeText={(text) => setFormData(prev => ({ ...prev, currentPassword: text }))}
-        placeholder="Enter current password"
-        secureTextEntry
-      />
       <Text style={styles.label}>New Password</Text>
       <TextInput
         style={styles.input}
