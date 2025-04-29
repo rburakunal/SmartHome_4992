@@ -15,6 +15,7 @@ import Toast from '../../../components/Toast';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_CONFIG } from '../../../service/config';
 import axios from 'axios';
+import { authService } from '../../../service/api';
 
 interface FormData {
   username: string;
@@ -67,40 +68,32 @@ export default function AccountSettings() {
       setLoading(true);
       console.log('Fetching user data from API...');
       
-      // Get current email from AsyncStorage first
-      const userInfoStr = await AsyncStorage.getItem('userInfo');
-      let currentEmail = '';
-      
-      if (userInfoStr) {
-        try {
-          const userInfo = JSON.parse(userInfoStr);
-          currentEmail = userInfo.email || '';
-        } catch (err) {
-          console.error('Error parsing user info:', err);
+      try {
+        // Try to get user data from the API first
+        const response = await authService.getUserProfile();
+        if (response && response.user) {
+          console.log('Got user data from API:', response.user);
+          return response.user;
         }
+      } catch (apiError) {
+        console.error('API error, falling back to local storage:', apiError);
       }
       
-      if (!currentEmail) {
-        console.error('No email found in storage, cannot fetch user data');
+      // Fallback to local storage if API fails
+      const userInfoStr = await AsyncStorage.getItem('userInfo');
+      if (!userInfoStr) {
+        console.error('No user info found in storage');
         setLoading(false);
         return null;
       }
       
-      // Use the email update endpoint - this will return full user data
-      const response = await api.put(
-        `${API_CONFIG.ENDPOINTS.USER}/guncelle`,
-        { email: currentEmail }
-      );
-      
-      console.log('User data response:', JSON.stringify(response.data));
-      
-      if (response.data && response.data.user) {
-        // Save the complete user info to storage
-        await AsyncStorage.setItem('userInfo', JSON.stringify(response.data.user));
-        return response.data.user;
+      try {
+        const userInfo = JSON.parse(userInfoStr);
+        return userInfo;
+      } catch (err) {
+        console.error('Error parsing user info:', err);
+        return null;
       }
-      
-      return null;
     } catch (error) {
       console.error('Error fetching user data:', error);
       return null;
@@ -163,6 +156,12 @@ export default function AccountSettings() {
       setLoading(true);
 
       // Validate inputs
+      if (!formData.currentPassword) {
+        showToastMessage('Current password is required', 'error');
+        setLoading(false);
+        return;
+      }
+
       if (section === 'password') {
         if (formData.newPassword !== formData.confirmPassword) {
           showToastMessage('New passwords do not match', 'error');
@@ -176,7 +175,9 @@ export default function AccountSettings() {
         }
       }
 
-      const updateData: any = {};
+      const updateData: any = {
+        currentPassword: formData.currentPassword
+      };
       
       if (section === 'email') {
         if (!formData.email) {
@@ -215,14 +216,12 @@ export default function AccountSettings() {
       showToastMessage(`${section.charAt(0).toUpperCase() + section.slice(1)} updated successfully`);
 
       // Reset form fields
-      if (section === 'password') {
-        setFormData(prev => ({
-          ...prev,
-          currentPassword: '',
-          newPassword: '',
-          confirmPassword: '',
-        }));
-      }
+      setFormData(prev => ({
+        ...prev,
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      }));
     } catch (error: any) {
       console.error('Error updating profile:', error);
       const errorMessage = error.response?.data?.message || 'An error occurred';
@@ -267,6 +266,14 @@ export default function AccountSettings() {
         keyboardType="email-address"
         autoCapitalize="none"
       />
+      <Text style={styles.label}>Current Password</Text>
+      <TextInput
+        style={styles.input}
+        value={formData.currentPassword}
+        onChangeText={(text) => setFormData(prev => ({ ...prev, currentPassword: text }))}
+        placeholder="Enter current password to confirm"
+        secureTextEntry
+      />
       <TouchableOpacity
         style={styles.saveButton}
         onPress={() => handleSave('email')}
@@ -278,6 +285,14 @@ export default function AccountSettings() {
 
   const renderPasswordSection = () => (
     <View style={styles.section}>
+      <Text style={styles.label}>Current Password</Text>
+      <TextInput
+        style={styles.input}
+        value={formData.currentPassword}
+        onChangeText={(text) => setFormData(prev => ({ ...prev, currentPassword: text }))}
+        placeholder="Enter current password"
+        secureTextEntry
+      />
       <Text style={styles.label}>New Password</Text>
       <TextInput
         style={styles.input}

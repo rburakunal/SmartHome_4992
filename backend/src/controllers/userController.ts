@@ -24,19 +24,29 @@ export const deleteUser = async (req: Request, res: Response) => {
   }
 };
 
-// ✅ Kullanıcı kendi profilini günceller (username hariç)
 export const updateProfile = async (req: Request, res: Response) => {
   const userId = req.user?.userId;
-  const { email, password } = req.body;
+  const { email, password, currentPassword } = req.body;
 
   if (!email && !password) {
-    return res.status(400).json({ message: 'Email veya şifre sağlanmalı.' });
+    return res.status(400).json({ message: 'Email veya yeni şifre sağlanmalı.' });
+  }
+
+  // ✅ Mevcut şifre her durumda zorunlu
+  if (!currentPassword) {
+    return res.status(400).json({ message: 'Mevcut şifre zorunludur.' });
   }
 
   try {
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'Kullanıcı bulunamadı.' });
+    }
+
+    // ✅ Mevcut şifreyi kontrol et
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Mevcut şifre hatalı.' });
     }
 
     if (email) user.email = email;
@@ -48,7 +58,7 @@ export const updateProfile = async (req: Request, res: Response) => {
     await user.save();
 
     res.json({
-      message: 'Profil güncellendi',
+      message: 'Profil başarıyla güncellendi.',
       user: {
         username: user.username,
         email: user.email,
@@ -58,6 +68,33 @@ export const updateProfile = async (req: Request, res: Response) => {
     });
   } catch (err) {
     console.error('❌ Profil güncelleme hatası:', err);
-    res.status(500).json({ message: 'Profil güncellenemedi', error: err });
+    res.status(500).json({ message: 'Profil güncellenemedi.', error: err });
+  }
+};
+
+// ✅ Mevcut kullanıcının bilgilerini getir
+export const getCurrentUser = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: 'Oturum açmanız gerekiyor.' });
+    }
+
+    const user = await User.findById(userId, '-password');
+    if (!user) {
+      return res.status(404).json({ message: 'Kullanıcı bulunamadı.' });
+    }
+
+    res.json({
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (err) {
+    console.error('❌ Kullanıcı bilgisi alma hatası:', err);
+    res.status(500).json({ message: 'Kullanıcı bilgisi alınamadı.', error: err });
   }
 };

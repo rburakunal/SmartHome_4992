@@ -94,5 +94,22 @@ export const authService = {
     } catch (error) {
       return false;
     }
+  },
+  
+  // Add a new function to get the user profile
+  getUserProfile: async (): Promise<any> => {
+    try {
+      const { data } = await api.get(`${API_CONFIG.ENDPOINTS.USER}/profil`);
+      
+      // Store the user info in AsyncStorage for offline access
+      if (data.user) {
+        await AsyncStorage.setItem('userInfo', JSON.stringify(data.user));
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      throw error;
+    }
   }
 };
