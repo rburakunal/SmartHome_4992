@@ -7,9 +7,18 @@ export default function PinScreen() {
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [error, setError] = useState('');
+  const [inputKey, setInputKey] = useState(0);
 
   const validatePin = (pin: string) => {
     return /^\d{4}$/.test(pin);
+  };
+
+  const resetForm = () => {
+    setCurrentPin('');
+    setNewPin('');
+    setConfirmPin('');
+    setError('');
+    setInputKey(prev => prev + 1);
   };
 
   const handleSubmit = async () => {
@@ -40,13 +49,8 @@ export default function PinScreen() {
       Alert.alert(
         'Success',
         'PIN successfully changed',
-        [{ text: 'OK' }]
+        [{ text: 'OK', onPress: resetForm }]
       );
-
-      // Clear form
-      setCurrentPin('');
-      setNewPin('');
-      setConfirmPin('');
     } catch (err) {
       setError('Failed to change PIN. Please try again.');
     }
@@ -55,14 +59,16 @@ export default function PinScreen() {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
-        <View style={styles.form}>
+        <View style={styles.form} key={inputKey}>
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Current PIN</Text>
             <TextInput
+              key="current-pin"
               style={styles.input}
               value={currentPin}
               onChangeText={setCurrentPin}
               placeholder="Enter current PIN"
+              placeholderTextColor="#999"
               keyboardType="numeric"
               secureTextEntry
               maxLength={4}
@@ -72,10 +78,12 @@ export default function PinScreen() {
           <View style={styles.inputContainer}>
             <Text style={styles.label}>New PIN</Text>
             <TextInput
+              key="new-pin"
               style={styles.input}
               value={newPin}
               onChangeText={setNewPin}
               placeholder="Enter new PIN"
+              placeholderTextColor="#999"
               keyboardType="numeric"
               secureTextEntry
               maxLength={4}
@@ -85,10 +93,12 @@ export default function PinScreen() {
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Confirm New PIN</Text>
             <TextInput
+              key="confirm-pin"
               style={styles.input}
               value={confirmPin}
               onChangeText={setConfirmPin}
               placeholder="Confirm new PIN"
+              placeholderTextColor="#999"
               keyboardType="numeric"
               secureTextEntry
               maxLength={4}
@@ -134,6 +144,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
+    color: '#333',
   },
   button: {
     backgroundColor: Colors.light.tint,
