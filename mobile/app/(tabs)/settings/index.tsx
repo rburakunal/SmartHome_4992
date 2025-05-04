@@ -44,14 +44,9 @@ export default function SettingsScreen() {
           onPress={() => router.push('/(tabs)/settings/notifications')}
         />
         <SettingItem
-          title="App Preferences"
-          icon="settings-outline"
-          onPress={() => router.push('/(tabs)/settings/preferences')}
-        />
-        <SettingItem
-          title="Security Settings"
-          icon="shield-outline"
-          onPress={() => router.push('/(tabs)/settings/security')}
+          title="Change PIN"
+          icon="key-outline"
+          onPress={() => router.push('/(tabs)/settings/pin')}
         />
         <SettingItem
           title="About / Help"
