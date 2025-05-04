@@ -77,21 +77,15 @@ export default function SettingsLayout() {
         }}
       />
       <Stack.Screen
-        name="preferences"
-        options={{
-          title: 'App Preferences',
-        }}
-      />
-      <Stack.Screen
-        name="security"
-        options={{
-          title: 'Security',
-        }}
-      />
-      <Stack.Screen
         name="about"
         options={{
           title: 'About / Help',
+        }}
+      />
+      <Stack.Screen
+        name="pin"
+        options={{
+          title: 'Change PIN',
         }}
       />
     </Stack>
