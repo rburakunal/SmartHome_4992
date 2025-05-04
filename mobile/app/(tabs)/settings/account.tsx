@@ -10,6 +10,7 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
+import { router } from 'expo-router';
 import { Colors } from '../../../constants/Colors';
 import Toast from '../../../components/Toast';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -51,6 +52,9 @@ export default function AccountSettings() {
     newPassword: '',
     confirmPassword: '',
   });
+
+  // Add key for forcing remount when needed
+  const [inputKey, setInputKey] = useState(0);
 
   const [loading, setLoading] = useState(false);
   const [activeSection, setActiveSection] = useState<'details' | 'email' | 'password'>('details');
@@ -151,6 +155,18 @@ export default function AccountSettings() {
     setShowToast(true);
   };
 
+  const handleLogout = async () => {
+    try {
+      // Clear all relevant storage items
+      await AsyncStorage.multiRemove(['auth_token', 'userInfo']);
+      
+      // Navigate to login screen
+      router.replace('/login');
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  };
+
   const handleSave = async (section: 'details' | 'email' | 'password') => {
     try {
       setLoading(true);
@@ -208,11 +224,9 @@ export default function AccountSettings() {
       // Update local storage with updated user info
       if (response.data.user) {
         await AsyncStorage.setItem('userInfo', JSON.stringify(response.data.user));
-        
-        // Reload user data to reflect changes
-        loadUserData();
       }
 
+      // Show success message
       showToastMessage(`${section.charAt(0).toUpperCase() + section.slice(1)} updated successfully`);
 
       // Reset form fields
@@ -222,6 +236,14 @@ export default function AccountSettings() {
         newPassword: '',
         confirmPassword: '',
       }));
+
+      // If email or password was updated, show logout message and logout after 1 second
+      if (section === 'email' || section === 'password') {
+        setTimeout(() => {
+          showToastMessage('Logging out...', 'success');
+          setTimeout(handleLogout, 1000);
+        }, 1000);
+      }
     } catch (error: any) {
       console.error('Error updating profile:', error);
       const errorMessage = error.response?.data?.message || 'An error occurred';
@@ -229,6 +251,20 @@ export default function AccountSettings() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Modify section change handler
+  const handleSectionChange = (section: 'details' | 'email' | 'password') => {
+    setActiveSection(section);
+    // Reset form data when switching sections
+    setFormData(prev => ({
+      ...prev,
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    }));
+    // Force fresh render of inputs
+    setInputKey(prev => prev + 1);
   };
 
   const renderDetailsSection = () => (
@@ -263,6 +299,7 @@ export default function AccountSettings() {
         value={formData.email}
         onChangeText={(text) => setFormData(prev => ({ ...prev, email: text }))}
         placeholder="Enter new email"
+        placeholderTextColor="#999"
         keyboardType="email-address"
         autoCapitalize="none"
       />
@@ -272,6 +309,7 @@ export default function AccountSettings() {
         value={formData.currentPassword}
         onChangeText={(text) => setFormData(prev => ({ ...prev, currentPassword: text }))}
         placeholder="Enter current password to confirm"
+        placeholderTextColor="#999"
         secureTextEntry
       />
       <TouchableOpacity
@@ -287,26 +325,32 @@ export default function AccountSettings() {
     <View style={styles.section}>
       <Text style={styles.label}>Current Password</Text>
       <TextInput
+        key="current-password"
         style={styles.input}
         value={formData.currentPassword}
         onChangeText={(text) => setFormData(prev => ({ ...prev, currentPassword: text }))}
         placeholder="Enter current password"
+        placeholderTextColor="#999"
         secureTextEntry
       />
       <Text style={styles.label}>New Password</Text>
       <TextInput
+        key="new-password"
         style={styles.input}
         value={formData.newPassword}
         onChangeText={(text) => setFormData(prev => ({ ...prev, newPassword: text }))}
         placeholder="Enter new password"
+        placeholderTextColor="#999"
         secureTextEntry
       />
       <Text style={styles.label}>Confirm New Password</Text>
       <TextInput
+        key="confirm-password"
         style={styles.input}
         value={formData.confirmPassword}
         onChangeText={(text) => setFormData(prev => ({ ...prev, confirmPassword: text }))}
         placeholder="Confirm new password"
+        placeholderTextColor="#999"
         secureTextEntry
       />
       <TouchableOpacity
@@ -327,7 +371,7 @@ export default function AccountSettings() {
         <View style={styles.tabs}>
           <TouchableOpacity
             style={[styles.tab, activeSection === 'details' && styles.activeTab]}
-            onPress={() => setActiveSection('details')}
+            onPress={() => handleSectionChange('details')}
           >
             <Text style={[styles.tabText, activeSection === 'details' && styles.activeTabText]}>
               Details
@@ -335,7 +379,7 @@ export default function AccountSettings() {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.tab, activeSection === 'email' && styles.activeTab]}
-            onPress={() => setActiveSection('email')}
+            onPress={() => handleSectionChange('email')}
           >
             <Text style={[styles.tabText, activeSection === 'email' && styles.activeTabText]}>
               Email
@@ -343,7 +387,7 @@ export default function AccountSettings() {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.tab, activeSection === 'password' && styles.activeTab]}
-            onPress={() => setActiveSection('password')}
+            onPress={() => handleSectionChange('password')}
           >
             <Text style={[styles.tabText, activeSection === 'password' && styles.activeTabText]}>
               Password
@@ -353,8 +397,16 @@ export default function AccountSettings() {
 
         <ScrollView style={styles.content}>
           {activeSection === 'details' && renderDetailsSection()}
-          {activeSection === 'email' && renderEmailSection()}
-          {activeSection === 'password' && renderPasswordSection()}
+          {activeSection === 'email' && (
+            <View key={inputKey}>
+              {renderEmailSection()}
+            </View>
+          )}
+          {activeSection === 'password' && (
+            <View key={inputKey}>
+              {renderPasswordSection()}
+            </View>
+          )}
         </ScrollView>
 
         {loading && (
@@ -421,6 +473,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     fontSize: 16,
     marginBottom: 15,
+    color: '#333',
   },
   readOnlyField: {
     height: 50,
