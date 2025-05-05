@@ -36,7 +36,7 @@ api.interceptors.response.use(
     
     // Server response with error status
     const errorResponse: AuthError = {
-      message: error.response?.data?.message || `Error ${error.response.status}: ${error.response.statusText}`,
+      message: error.response?.data?.error || error.response?.data?.message || `Error ${error.response.status}: ${error.response.statusText}`,
       error: error.response?.data
     };
     return Promise.reject(errorResponse);
@@ -109,6 +109,31 @@ export const authService = {
       return data;
     } catch (error) {
       console.error('Error fetching user profile:', error);
+      throw error;
+    }
+  },
+
+  // Add PIN update functionality
+  updatePin: async (currentPin: string, newPin: string): Promise<{ message: string }> => {
+    try {
+      const { data } = await api.put(`${API_CONFIG.ENDPOINTS.USER}/pin`, {
+        currentPin,
+        pin: newPin
+      });
+      return data;
+    } catch (error) {
+      console.error('Error updating PIN:', error);
+      throw error;
+    }
+  },
+
+  // Check if user has PIN set
+  checkPinStatus: async (): Promise<{ hasPin: boolean }> => {
+    try {
+      const { data } = await api.get(`${API_CONFIG.ENDPOINTS.USER}/pin/status`);
+      return data;
+    } catch (error) {
+      console.error('Error checking PIN status:', error);
       throw error;
     }
   }
