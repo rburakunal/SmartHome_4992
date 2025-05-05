@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LineChart } from 'react-native-chart-kit';
 import Header from '@/components/Header';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useDevice } from '@/context/DeviceContext';
 
 interface SensorData {
   movement: boolean;
@@ -12,6 +12,11 @@ interface SensorData {
   temperature: number;
   humidity: number;
   doorStatus: 'locked' | 'unlocked';
+  alarmStatus: 'armed' | 'disarmed';
+  mainDoorLock: boolean;
+  garageDoor: boolean;
+  curtain: boolean;
+  kitchenFan: boolean;
 }
 
 interface SensorCardProps {
@@ -25,6 +30,7 @@ interface SensorCardProps {
 
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
+  const { deviceState } = useDevice();
   const [sensorData, setSensorData] = useState<SensorData>({
     movement: false,
     distance: 0,
@@ -32,14 +38,17 @@ export default function DashboardScreen() {
     temperature: 24,
     humidity: 45,
     doorStatus: 'locked',
+    alarmStatus: 'armed',
+    mainDoorLock: true,
+    garageDoor: true,
+    curtain: false,
+    kitchenFan: false,
   });
 
   const [refreshing, setRefreshing] = useState(false);
-  const [temperatureHistory, setTemperatureHistory] = useState<number[]>([24, 23, 25, 24, 23, 24]);
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-    // Simulate fetching new data
     setTimeout(() => {
       setSensorData(prev => ({
         ...prev,
@@ -53,7 +62,7 @@ export default function DashboardScreen() {
 
   const SensorCard = ({ title, value, icon, unit = '', color = '#007AFF', trend }: SensorCardProps) => (
     <View style={styles.card}>
-      <View style={styles.cardHeader}>
+      <View style={styles.sensorCardHeader}>
         <Ionicons name={icon} size={24} color={color} />
         <Text style={styles.cardTitle}>{title}</Text>
         {trend && (
@@ -120,30 +129,40 @@ export default function DashboardScreen() {
           />
         </View>
 
-        <View style={styles.chartContainer}>
-          <Text style={styles.chartTitle}>Temperature History</Text>
-          <LineChart
-            data={{
-              labels: ['1h', '2h', '3h', '4h', '5h', '6h'],
-              datasets: [{
-                data: temperatureHistory
-              }]
-            }}
-            width={Dimensions.get('window').width - 40}
-            height={220}
-            chartConfig={{
-              backgroundColor: '#ffffff',
-              backgroundGradientFrom: '#ffffff',
-              backgroundGradientTo: '#ffffff',
-              decimalPlaces: 1,
-              color: (opacity = 1) => `rgba(255, 149, 0, ${opacity})`,
-              style: {
-                borderRadius: 16
-              }
-            }}
-            style={styles.chart}
-            bezier
-          />
+        <View style={styles.alarmContainer}>
+          <Text style={styles.sectionTitle}>Device Status</Text>
+          <View style={styles.grid}>
+            <SensorCard
+              title="Alarm System"
+              value={deviceState.alarmSystem ? "Armed" : "Disarmed"}
+              icon="shield"
+              color={deviceState.alarmSystem ? "#34C759" : "#FF3B30"}
+            />
+            <SensorCard
+              title="Main Door"
+              value={deviceState.mainDoorLock ? "Locked" : "Unlocked"}
+              icon="lock-closed"
+              color={deviceState.mainDoorLock ? "#34C759" : "#FF3B30"}
+            />
+            <SensorCard
+              title="Garage Door"
+              value={deviceState.garageDoor ? "Closed" : "Open"}
+              icon="car"
+              color={deviceState.garageDoor ? "#34C759" : "#FF3B30"}
+            />
+            <SensorCard
+              title="Curtains"
+              value={deviceState.curtain ? "Open" : "Closed"}
+              icon="sunny"
+              color={deviceState.curtain ? "#FF9500" : "#8E8E93"}
+            />
+            <SensorCard
+              title="Kitchen Fan"
+              value={deviceState.kitchenFan ? "On" : "Off"}
+              icon="power"
+              color={deviceState.kitchenFan ? "#5856D6" : "#8E8E93"}
+            />
+          </View>
         </View>
       </ScrollView>
     </View>
@@ -188,7 +207,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 3,
   },
-  cardHeader: {
+  sensorCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
@@ -204,11 +223,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
   },
-  chartContainer: {
+  alarmContainer: {
+    padding: 20,
+  },
+  alarmCard: {
     backgroundColor: 'white',
-    margin: 20,
-    padding: 15,
     borderRadius: 15,
+    padding: 20,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -218,14 +239,15 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 3,
   },
-  chartTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 15,
-    color: '#333',
+  alarmHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  chart: {
-    marginVertical: 8,
-    borderRadius: 16,
-  },
+  alarmStatus: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginLeft: 15,
+  }
 });
+

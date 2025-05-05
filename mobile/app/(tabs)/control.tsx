@@ -1,46 +1,186 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Switch } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { Ionicons } from '@expo/vector-icons';
 import Header from '@/components/Header';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useDevice } from '@/context/DeviceContext';
 
-interface ControlSettings {
-  temperature: number;
-  humidity: number;
-  lightIntensity: number;
-  isAlarmEnabled: boolean;
-  isAutoMode: boolean;
-  isNightMode: boolean;
+interface SwitchProps {
+  label: string;
+  initialState?: boolean;
 }
+
+interface ControlCardProps {
+  title: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  children: React.ReactNode;
+}
+
+// Simple independent switch component
+const SimpleSwitch = ({ label, initialState = false }: SwitchProps) => {
+  const [isOn, setIsOn] = useState(initialState);
+  return (
+    <View style={styles.settingRow}>
+      <Text style={styles.settingText}>{label}</Text>
+      <Switch
+        value={isOn}
+        onValueChange={setIsOn}
+        trackColor={{ false: '#767577', true: '#81b0ff' }}
+        thumbColor={isOn ? '#007AFF' : '#f4f3f4'}
+      />
+    </View>
+  );
+};
+
+const AlarmSwitch = () => {
+  const { deviceState, updateDeviceState } = useDevice();
+  return (
+    <View style={styles.settingRow}>
+      <Text style={styles.settingText}>Alarm System</Text>
+      <Switch
+        value={deviceState.alarmSystem}
+        onValueChange={(value) => updateDeviceState('alarmSystem', value)}
+        trackColor={{ false: '#767577', true: '#81b0ff' }}
+        thumbColor={deviceState.alarmSystem ? '#007AFF' : '#f4f3f4'}
+      />
+    </View>
+  );
+};
+
+const MainDoorSwitch = () => {
+  const { deviceState, updateDeviceState } = useDevice();
+  return (
+    <View style={styles.settingRow}>
+      <Text style={styles.settingText}>Main Door Lock</Text>
+      <Switch
+        value={deviceState.mainDoorLock}
+        onValueChange={(value) => updateDeviceState('mainDoorLock', value)}
+        trackColor={{ false: '#767577', true: '#81b0ff' }}
+        thumbColor={deviceState.mainDoorLock ? '#007AFF' : '#f4f3f4'}
+      />
+    </View>
+  );
+};
+
+const GarageDoorSwitch = () => {
+  const { deviceState, updateDeviceState } = useDevice();
+  return (
+    <View style={styles.settingRow}>
+      <Text style={styles.settingText}>Garage Door</Text>
+      <Switch
+        value={deviceState.garageDoor}
+        onValueChange={(value) => updateDeviceState('garageDoor', value)}
+        trackColor={{ false: '#767577', true: '#81b0ff' }}
+        thumbColor={deviceState.garageDoor ? '#007AFF' : '#f4f3f4'}
+      />
+    </View>
+  );
+};
+
+const CurtainSwitch = () => {
+  const { deviceState, updateDeviceState } = useDevice();
+  return (
+    <View style={styles.settingRow}>
+      <Text style={styles.settingText}>Curtain</Text>
+      <Switch
+        value={deviceState.curtain}
+        onValueChange={(value) => updateDeviceState('curtain', value)}
+        trackColor={{ false: '#767577', true: '#81b0ff' }}
+        thumbColor={deviceState.curtain ? '#007AFF' : '#f4f3f4'}
+      />
+    </View>
+  );
+};
+
+const KitchenFanSwitch = () => {
+  const { deviceState, updateDeviceState } = useDevice();
+  return (
+    <View style={styles.settingRow}>
+      <Text style={styles.settingText}>Kitchen Exhaust Fan</Text>
+      <Switch
+        value={deviceState.kitchenFan}
+        onValueChange={(value) => updateDeviceState('kitchenFan', value)}
+        trackColor={{ false: '#767577', true: '#81b0ff' }}
+        thumbColor={deviceState.kitchenFan ? '#007AFF' : '#f4f3f4'}
+      />
+    </View>
+  );
+};
+
+const TemperatureSlider = () => {
+  const [value, setValue] = useState(22);
+  return (
+    <View style={styles.sliderContainer}>
+      <Text style={styles.valueText}>{Math.round(value)}°C</Text>
+      <Slider
+        style={styles.slider}
+        minimumValue={16}
+        maximumValue={30}
+        value={value}
+        onValueChange={setValue}
+        minimumTrackTintColor="#007AFF"
+        maximumTrackTintColor="#E5E5EA"
+        thumbTintColor="#007AFF"
+      />
+      <View style={styles.sliderLabels}>
+        <Text style={styles.sliderLabel}>16°C</Text>
+        <Text style={styles.sliderLabel}>30°C</Text>
+      </View>
+    </View>
+  );
+};
+
+const HumiditySlider = () => {
+  const [value, setValue] = useState(45);
+  return (
+    <View style={styles.sliderContainer}>
+      <Text style={styles.valueText}>{Math.round(value)}%</Text>
+      <Slider
+        style={styles.slider}
+        minimumValue={30}
+        maximumValue={70}
+        value={value}
+        onValueChange={setValue}
+        minimumTrackTintColor="#007AFF"
+        maximumTrackTintColor="#E5E5EA"
+        thumbTintColor="#007AFF"
+      />
+      <View style={styles.sliderLabels}>
+        <Text style={styles.sliderLabel}>30%</Text>
+        <Text style={styles.sliderLabel}>70%</Text>
+      </View>
+    </View>
+  );
+};
+
+const LightSlider = () => {
+  const [value, setValue] = useState(50);
+  return (
+    <View style={styles.sliderContainer}>
+      <Text style={styles.valueText}>{Math.round(value)}%</Text>
+      <Slider
+        style={styles.slider}
+        minimumValue={0}
+        maximumValue={100}
+        value={value}
+        onValueChange={setValue}
+        minimumTrackTintColor="#007AFF"
+        maximumTrackTintColor="#E5E5EA"
+        thumbTintColor="#007AFF"
+      />
+      <View style={styles.sliderLabels}>
+        <Text style={styles.sliderLabel}>0%</Text>
+        <Text style={styles.sliderLabel}>100%</Text>
+      </View>
+    </View>
+  );
+};
 
 export default function ControlScreen() {
   const insets = useSafeAreaInsets();
-  const [settings, setSettings] = useState<ControlSettings>({
-    temperature: 22,
-    humidity: 45,
-    lightIntensity: 50,
-    isAlarmEnabled: true,
-    isAutoMode: true,
-    isNightMode: false,
-  });
-
-  const updateSetting = (key: keyof ControlSettings, value: number | boolean) => {
-    setSettings(prev => ({
-      ...prev,
-      [key]: value
-    }));
-  };
-
-  const ControlCard = ({ 
-    title, 
-    icon, 
-    children 
-  }: { 
-    title: string; 
-    icon: keyof typeof Ionicons.glyphMap; 
-    children: React.ReactNode 
-  }) => (
+  
+  const ControlCard = ({ title, icon, children }: ControlCardProps) => (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
         <Ionicons name={icon} size={24} color="#007AFF" />
@@ -63,93 +203,23 @@ export default function ControlScreen() {
           <Text style={styles.sectionTitle}>Control Panel</Text>
 
           <ControlCard title="Temperature Control" icon="thermometer">
-            <View style={styles.sliderContainer}>
-              <Text style={styles.valueText}>{settings.temperature}°C</Text>
-              <Slider
-                style={styles.slider}
-                minimumValue={16}
-                maximumValue={30}
-                value={settings.temperature}
-                onValueChange={(value) => updateSetting('temperature', value)}
-                minimumTrackTintColor="#007AFF"
-                maximumTrackTintColor="#E5E5EA"
-                thumbTintColor="#007AFF"
-              />
-              <View style={styles.sliderLabels}>
-                <Text style={styles.sliderLabel}>16°C</Text>
-                <Text style={styles.sliderLabel}>30°C</Text>
-              </View>
-            </View>
+            <TemperatureSlider />
           </ControlCard>
 
           <ControlCard title="Humidity Control" icon="water">
-            <View style={styles.sliderContainer}>
-              <Text style={styles.valueText}>{settings.humidity}%</Text>
-              <Slider
-                style={styles.slider}
-                minimumValue={30}
-                maximumValue={70}
-                value={settings.humidity}
-                onValueChange={(value) => updateSetting('humidity', value)}
-                minimumTrackTintColor="#5856D6"
-                maximumTrackTintColor="#E5E5EA"
-                thumbTintColor="#5856D6"
-              />
-              <View style={styles.sliderLabels}>
-                <Text style={styles.sliderLabel}>30%</Text>
-                <Text style={styles.sliderLabel}>70%</Text>
-              </View>
-            </View>
+            <HumiditySlider />
           </ControlCard>
 
           <ControlCard title="Light Intensity" icon="sunny">
-            <View style={styles.sliderContainer}>
-              <Text style={styles.valueText}>{settings.lightIntensity}%</Text>
-              <Slider
-                style={styles.slider}
-                minimumValue={0}
-                maximumValue={100}
-                value={settings.lightIntensity}
-                onValueChange={(value) => updateSetting('lightIntensity', value)}
-                minimumTrackTintColor="#FF9500"
-                maximumTrackTintColor="#E5E5EA"
-                thumbTintColor="#FF9500"
-              />
-              <View style={styles.sliderLabels}>
-                <Text style={styles.sliderLabel}>0%</Text>
-                <Text style={styles.sliderLabel}>100%</Text>
-              </View>
-            </View>
+            <LightSlider />
           </ControlCard>
 
-          <ControlCard title="System Settings" icon="settings">
-            <View style={styles.settingRow}>
-              <Text style={styles.settingText}>Alarm System</Text>
-              <Switch
-                value={settings.isAlarmEnabled}
-                onValueChange={(value) => updateSetting('isAlarmEnabled', value)}
-                trackColor={{ false: '#767577', true: '#81b0ff' }}
-                thumbColor={settings.isAlarmEnabled ? '#007AFF' : '#f4f3f4'}
-              />
-            </View>
-            <View style={styles.settingRow}>
-              <Text style={styles.settingText}>Auto Mode</Text>
-              <Switch
-                value={settings.isAutoMode}
-                onValueChange={(value) => updateSetting('isAutoMode', value)}
-                trackColor={{ false: '#767577', true: '#81b0ff' }}
-                thumbColor={settings.isAutoMode ? '#007AFF' : '#f4f3f4'}
-              />
-            </View>
-            <View style={styles.settingRow}>
-              <Text style={styles.settingText}>Night Mode</Text>
-              <Switch
-                value={settings.isNightMode}
-                onValueChange={(value) => updateSetting('isNightMode', value)}
-                trackColor={{ false: '#767577', true: '#81b0ff' }}
-                thumbColor={settings.isNightMode ? '#007AFF' : '#f4f3f4'}
-              />
-            </View>
+          <ControlCard title="System Controls" icon="settings">
+            <AlarmSwitch />
+            <MainDoorSwitch />
+            <GarageDoorSwitch />
+            <CurtainSwitch />
+            <KitchenFanSwitch />
           </ControlCard>
         </View>
       </ScrollView>
