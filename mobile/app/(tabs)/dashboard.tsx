@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LineChart } from 'react-native-chart-kit';
 import Header from '@/components/Header';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -12,6 +11,7 @@ interface SensorData {
   temperature: number;
   humidity: number;
   doorStatus: 'locked' | 'unlocked';
+  alarmStatus: 'armed' | 'disarmed';
 }
 
 interface SensorCardProps {
@@ -32,14 +32,13 @@ export default function DashboardScreen() {
     temperature: 24,
     humidity: 45,
     doorStatus: 'locked',
+    alarmStatus: 'armed',
   });
 
   const [refreshing, setRefreshing] = useState(false);
-  const [temperatureHistory, setTemperatureHistory] = useState<number[]>([24, 23, 25, 24, 23, 24]);
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-    // Simulate fetching new data
     setTimeout(() => {
       setSensorData(prev => ({
         ...prev,
@@ -53,7 +52,7 @@ export default function DashboardScreen() {
 
   const SensorCard = ({ title, value, icon, unit = '', color = '#007AFF', trend }: SensorCardProps) => (
     <View style={styles.card}>
-      <View style={styles.cardHeader}>
+      <View style={styles.sensorCardHeader}>
         <Ionicons name={icon} size={24} color={color} />
         <Text style={styles.cardTitle}>{title}</Text>
         {trend && (
@@ -120,30 +119,22 @@ export default function DashboardScreen() {
           />
         </View>
 
-        <View style={styles.chartContainer}>
-          <Text style={styles.chartTitle}>Temperature History</Text>
-          <LineChart
-            data={{
-              labels: ['1h', '2h', '3h', '4h', '5h', '6h'],
-              datasets: [{
-                data: temperatureHistory
-              }]
-            }}
-            width={Dimensions.get('window').width - 40}
-            height={220}
-            chartConfig={{
-              backgroundColor: '#ffffff',
-              backgroundGradientFrom: '#ffffff',
-              backgroundGradientTo: '#ffffff',
-              decimalPlaces: 1,
-              color: (opacity = 1) => `rgba(255, 149, 0, ${opacity})`,
-              style: {
-                borderRadius: 16
-              }
-            }}
-            style={styles.chart}
-            bezier
-          />
+        <View style={styles.alarmContainer}>
+          <Text style={styles.sectionTitle}>Alarm System Status</Text>
+          <View style={styles.alarmCard}>
+            <View style={styles.alarmHeader}>
+              <Ionicons 
+                name={sensorData.alarmStatus === 'armed' ? 'shield-checkmark' : 'shield-outline'} 
+                size={32} 
+                color={sensorData.alarmStatus === 'armed' ? '#34C759' : '#FF3B30'} 
+              />
+              <Text style={[styles.alarmStatus, {
+                color: sensorData.alarmStatus === 'armed' ? '#34C759' : '#FF3B30'
+              }]}>
+                {sensorData.alarmStatus === 'armed' ? 'ON' : 'OFF'}
+              </Text>
+            </View>
+          </View>
         </View>
       </ScrollView>
     </View>
@@ -188,7 +179,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 3,
   },
-  cardHeader: {
+  sensorCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
@@ -204,11 +195,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
   },
-  chartContainer: {
+  alarmContainer: {
+    padding: 20,
+  },
+  alarmCard: {
     backgroundColor: 'white',
-    margin: 20,
-    padding: 15,
     borderRadius: 15,
+    padding: 20,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -218,14 +211,15 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 3,
   },
-  chartTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 15,
-    color: '#333',
+  alarmHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  chart: {
-    marginVertical: 8,
-    borderRadius: 16,
-  },
+  alarmStatus: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginLeft: 15,
+  }
 });
+
