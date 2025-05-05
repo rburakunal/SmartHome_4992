@@ -34,7 +34,7 @@ client.on("message", async (topic, message) => {
     const parsed = JSON.parse(message.toString());
     const topicParts = topic.split("/");
 
-    // 👉 Sensör verisi
+    // 👉 Sensör verisi (örnek: ev/sensor/sicaklik)
     if (topic.includes("sensor")) {
       const type = topicParts[2] || "unknown";
       const data = { topic, type, value: parsed };
@@ -61,7 +61,6 @@ client.on("message", async (topic, message) => {
               triggeredBy: "automation"
             });
 
-            // 🔔 Emit cihaz durumu (otomasyon)
             global.io.emit("cihaz-durum-guncelleme", {
               deviceId: fanDevice._id,
               action: "on"
@@ -70,6 +69,12 @@ client.on("message", async (topic, message) => {
         } catch (err: any) {
           console.error("[OTOMASYON] FAN açma hatası:", err.message);
         }
+      }
+
+      // ✅ Nem verisi loglama
+      if (type === "nem") {
+        console.log(`[MQTT] Nem verisi alındı →`, parsed);
+        // SensorData kaydı zaten yukarıda yapılıyor
       }
 
       // ✅ Gaz alarmı
@@ -93,22 +98,40 @@ client.on("message", async (topic, message) => {
       }
     }
 
-    // 👉 Cihaz komutu (örneğin: /cihaz/kontrol üzerinden)
+    // 👉 Cihaz komutu (örnek: /cihaz/kontrol üzerinden publish edilen mesajlar)
     if (topic.includes("device")) {
       const deviceId = topicParts[2];
       const action = parsed?.action;
+      const value = parsed?.value;
 
       if (deviceId && action) {
-        await Device.findByIdAndUpdate(deviceId, { status: action });
-        console.log(`[MQTT] Cihaz durumu güncellendi → ${deviceId}: ${action}`);
+        let status = action;
+        if (action === "set-intensity" && value !== undefined) {
+          status = `intensity:${value}`;
+        }
 
-        // 🔔 Emit cihaz durumu (manuel kontrol)
+        await Device.findByIdAndUpdate(deviceId, { status });
+        console.log(`[MQTT] Cihaz durumu güncellendi → ${deviceId}: ${status}`);
+
         global.io.emit("cihaz-durum-guncelleme", {
           deviceId,
-          action
+          action,
+          value
         });
       }
     }
+
+    // 👉 Alarm kontrol topic’i (manuel kontrol)
+    if (topic === "ev/alarm/kontrol") {
+      console.log(`[MQTT] Alarm kontrol komutu alındı →`, parsed);
+      // Burada DB güncellemesi yapılacaksa eklenebilir
+    }
+
+    // 👉 Ana kapı kontrolü (unlock komutu)
+    if (topic.startsWith("ev/door/")) {
+      console.log(`[MQTT] Kapı kontrol mesajı → ${topic}:`, parsed);
+    }
+
   } catch (err: any) {
     console.error("[MQTT] Veri işleme hatası:", err.message);
   }

@@ -24,6 +24,7 @@ export const deleteUser = async (req: Request, res: Response) => {
   }
 };
 
+// ✅ Kullanıcı profilini güncelle (email / password)
 export const updateProfile = async (req: Request, res: Response) => {
   const userId = req.user?.userId;
   const { email, password, currentPassword } = req.body;
@@ -32,7 +33,6 @@ export const updateProfile = async (req: Request, res: Response) => {
     return res.status(400).json({ message: 'Email veya yeni şifre sağlanmalı.' });
   }
 
-  // ✅ Mevcut şifre her durumda zorunlu
   if (!currentPassword) {
     return res.status(400).json({ message: 'Mevcut şifre zorunludur.' });
   }
@@ -43,7 +43,6 @@ export const updateProfile = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'Kullanıcı bulunamadı.' });
     }
 
-    // ✅ Mevcut şifreyi kontrol et
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Mevcut şifre hatalı.' });
@@ -69,6 +68,23 @@ export const updateProfile = async (req: Request, res: Response) => {
   } catch (err) {
     console.error('❌ Profil güncelleme hatası:', err);
     res.status(500).json({ message: 'Profil güncellenemedi.', error: err });
+  }
+};
+
+// ✅ PIN güncelleme (yeni eklendi)
+export const updatePin = async (req: Request, res: Response) => {
+  const userId = req.user?.userId;
+  const { pin } = req.body;
+
+  if (!pin) {
+    return res.status(400).json({ error: "PIN gereklidir." });
+  }
+
+  try {
+    await User.findByIdAndUpdate(userId, { pin });
+    res.json({ message: "PIN başarıyla güncellendi." });
+  } catch (err) {
+    res.status(500).json({ error: "PIN güncellenemedi.", details: err });
   }
 };
 

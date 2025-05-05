@@ -1,18 +1,23 @@
 import dotenv from 'dotenv';
 import express from 'express';
-import listEndpoints from 'express-list-endpoints'; // ✅ 5. ADIM
+import listEndpoints from 'express-list-endpoints';
 import http from 'http';
 import mongoose from 'mongoose';
 import { Server as SocketIOServer } from 'socket.io';
 import './services/mqttService';
 
 import SensorData from './models/SensorData';
+
 import alertRoutes from './routes/alertRoutes';
 import authRoutes from './routes/authRoutes';
 import deviceRoutes from './routes/deviceRoutes';
 import notificationRoutes from './routes/notificationRoutes';
 import userRoutes from './routes/userRoutes';
 import veriRoutes from './routes/veriRoutes';
+
+// 🆕 Yeni route dosyaları
+import alarmRoutes from './routes/alarmRoutes';
+import doorRoutes from './routes/doorRoutes';
 
 dotenv.config();
 
@@ -55,6 +60,12 @@ console.log("👥 /kullanicilar route'u yüklendi");
 app.use('/bildirim', notificationRoutes);
 console.log("📲 /bildirim route'u yüklendi");
 
+app.use('/alarm', alarmRoutes);
+console.log("🚨 /alarm route'u yüklendi");
+
+app.use('/door', doorRoutes);
+console.log("🚪 /door route'u yüklendi");
+
 app.get('/', (_req, res) => {
   res.send('Smart Home Backend çalışıyor 🚀');
 });
@@ -80,7 +91,7 @@ mongoose.connect(process.env.MONGO_URI || '', {
   .then(() => console.log("✅ MongoDB bağlantısı başarılı"))
   .catch((err) => console.error("❌ MongoDB bağlantı hatası:", err));
 
-// ✅ 5. ADIM — Tüm endpoint'leri göster
+// ✅ Route listesi
 console.log("📋 Route listesi:", listEndpoints(app));
 
 const PORT = process.env.PORT || 5000;

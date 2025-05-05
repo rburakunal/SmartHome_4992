@@ -5,7 +5,8 @@ export interface IUser extends Document {
   email: string;
   password: string;
   role: 'user' | 'admin';
-  expoPushToken?: string; // ✅ Eklenen alan
+  expoPushToken?: string;
+  pin?: string; // ✅ Kullanıcıya özel PIN (ör: kapı açma için)
 }
 
 const UserSchema = new Schema<IUser>({
@@ -13,7 +14,8 @@ const UserSchema = new Schema<IUser>({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   role: { type: String, enum: ['user', 'admin'], default: 'user' },
-  expoPushToken: { type: String } // ✅ Eklenen alan
+  expoPushToken: { type: String },
+  pin: { type: String } // ✅ Yeni eklenen alan
 });
 
 export default mongoose.model<IUser>('User', UserSchema);
