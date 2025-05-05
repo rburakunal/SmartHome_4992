@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native
 import { Ionicons } from '@expo/vector-icons';
 import Header from '@/components/Header';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useDevice } from '@/context/DeviceContext';
 
 interface SensorData {
   movement: boolean;
@@ -12,6 +13,10 @@ interface SensorData {
   humidity: number;
   doorStatus: 'locked' | 'unlocked';
   alarmStatus: 'armed' | 'disarmed';
+  mainDoorLock: boolean;
+  garageDoor: boolean;
+  curtain: boolean;
+  kitchenFan: boolean;
 }
 
 interface SensorCardProps {
@@ -25,6 +30,7 @@ interface SensorCardProps {
 
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
+  const { deviceState } = useDevice();
   const [sensorData, setSensorData] = useState<SensorData>({
     movement: false,
     distance: 0,
@@ -33,6 +39,10 @@ export default function DashboardScreen() {
     humidity: 45,
     doorStatus: 'locked',
     alarmStatus: 'armed',
+    mainDoorLock: true,
+    garageDoor: true,
+    curtain: false,
+    kitchenFan: false,
   });
 
   const [refreshing, setRefreshing] = useState(false);
@@ -120,20 +130,38 @@ export default function DashboardScreen() {
         </View>
 
         <View style={styles.alarmContainer}>
-          <Text style={styles.sectionTitle}>Alarm System Status</Text>
-          <View style={styles.alarmCard}>
-            <View style={styles.alarmHeader}>
-              <Ionicons 
-                name={sensorData.alarmStatus === 'armed' ? 'shield-checkmark' : 'shield-outline'} 
-                size={32} 
-                color={sensorData.alarmStatus === 'armed' ? '#34C759' : '#FF3B30'} 
-              />
-              <Text style={[styles.alarmStatus, {
-                color: sensorData.alarmStatus === 'armed' ? '#34C759' : '#FF3B30'
-              }]}>
-                {sensorData.alarmStatus === 'armed' ? 'ON' : 'OFF'}
-              </Text>
-            </View>
+          <Text style={styles.sectionTitle}>Device Status</Text>
+          <View style={styles.grid}>
+            <SensorCard
+              title="Alarm System"
+              value={deviceState.alarmSystem ? "Armed" : "Disarmed"}
+              icon="shield"
+              color={deviceState.alarmSystem ? "#34C759" : "#FF3B30"}
+            />
+            <SensorCard
+              title="Main Door"
+              value={deviceState.mainDoorLock ? "Locked" : "Unlocked"}
+              icon="lock-closed"
+              color={deviceState.mainDoorLock ? "#34C759" : "#FF3B30"}
+            />
+            <SensorCard
+              title="Garage Door"
+              value={deviceState.garageDoor ? "Closed" : "Open"}
+              icon="car"
+              color={deviceState.garageDoor ? "#34C759" : "#FF3B30"}
+            />
+            <SensorCard
+              title="Curtains"
+              value={deviceState.curtain ? "Open" : "Closed"}
+              icon="sunny"
+              color={deviceState.curtain ? "#FF9500" : "#8E8E93"}
+            />
+            <SensorCard
+              title="Kitchen Fan"
+              value={deviceState.kitchenFan ? "On" : "Off"}
+              icon="power"
+              color={deviceState.kitchenFan ? "#5856D6" : "#8E8E93"}
+            />
           </View>
         </View>
       </ScrollView>

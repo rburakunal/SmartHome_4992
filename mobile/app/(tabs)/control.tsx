@@ -4,6 +4,7 @@ import Slider from '@react-native-community/slider';
 import { Ionicons } from '@expo/vector-icons';
 import Header from '@/components/Header';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useDevice } from '@/context/DeviceContext';
 
 interface SwitchProps {
   label: string;
@@ -33,75 +34,75 @@ const SimpleSwitch = ({ label, initialState = false }: SwitchProps) => {
 };
 
 const AlarmSwitch = () => {
-  const [isEnabled, setIsEnabled] = useState(true);
+  const { deviceState, updateDeviceState } = useDevice();
   return (
     <View style={styles.settingRow}>
       <Text style={styles.settingText}>Alarm System</Text>
       <Switch
-        value={isEnabled}
-        onValueChange={setIsEnabled}
+        value={deviceState.alarmSystem}
+        onValueChange={(value) => updateDeviceState('alarmSystem', value)}
         trackColor={{ false: '#767577', true: '#81b0ff' }}
-        thumbColor={isEnabled ? '#007AFF' : '#f4f3f4'}
+        thumbColor={deviceState.alarmSystem ? '#007AFF' : '#f4f3f4'}
       />
     </View>
   );
 };
 
 const MainDoorSwitch = () => {
-  const [isLocked, setIsLocked] = useState(true);
+  const { deviceState, updateDeviceState } = useDevice();
   return (
     <View style={styles.settingRow}>
       <Text style={styles.settingText}>Main Door Lock</Text>
       <Switch
-        value={isLocked}
-        onValueChange={setIsLocked}
+        value={deviceState.mainDoorLock}
+        onValueChange={(value) => updateDeviceState('mainDoorLock', value)}
         trackColor={{ false: '#767577', true: '#81b0ff' }}
-        thumbColor={isLocked ? '#007AFF' : '#f4f3f4'}
+        thumbColor={deviceState.mainDoorLock ? '#007AFF' : '#f4f3f4'}
       />
     </View>
   );
 };
 
 const GarageDoorSwitch = () => {
-  const [isClosed, setIsClosed] = useState(true);
+  const { deviceState, updateDeviceState } = useDevice();
   return (
     <View style={styles.settingRow}>
       <Text style={styles.settingText}>Garage Door</Text>
       <Switch
-        value={isClosed}
-        onValueChange={setIsClosed}
+        value={deviceState.garageDoor}
+        onValueChange={(value) => updateDeviceState('garageDoor', value)}
         trackColor={{ false: '#767577', true: '#81b0ff' }}
-        thumbColor={isClosed ? '#007AFF' : '#f4f3f4'}
+        thumbColor={deviceState.garageDoor ? '#007AFF' : '#f4f3f4'}
       />
     </View>
   );
 };
 
 const CurtainSwitch = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const { deviceState, updateDeviceState } = useDevice();
   return (
     <View style={styles.settingRow}>
       <Text style={styles.settingText}>Curtain</Text>
       <Switch
-        value={isOpen}
-        onValueChange={setIsOpen}
+        value={deviceState.curtain}
+        onValueChange={(value) => updateDeviceState('curtain', value)}
         trackColor={{ false: '#767577', true: '#81b0ff' }}
-        thumbColor={isOpen ? '#007AFF' : '#f4f3f4'}
+        thumbColor={deviceState.curtain ? '#007AFF' : '#f4f3f4'}
       />
     </View>
   );
 };
 
 const KitchenFanSwitch = () => {
-  const [isOn, setIsOn] = useState(false);
+  const { deviceState, updateDeviceState } = useDevice();
   return (
     <View style={styles.settingRow}>
       <Text style={styles.settingText}>Kitchen Exhaust Fan</Text>
       <Switch
-        value={isOn}
-        onValueChange={setIsOn}
+        value={deviceState.kitchenFan}
+        onValueChange={(value) => updateDeviceState('kitchenFan', value)}
         trackColor={{ false: '#767577', true: '#81b0ff' }}
-        thumbColor={isOn ? '#007AFF' : '#f4f3f4'}
+        thumbColor={deviceState.kitchenFan ? '#007AFF' : '#f4f3f4'}
       />
     </View>
   );
