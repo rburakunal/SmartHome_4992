@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { deleteUser, getAllUsers, updateProfile, getCurrentUser, updatePin} from '../controllers/userController';
+import { deleteUser, getAllUsers, updateProfile, getCurrentUser, updatePin, checkPinStatus } from '../controllers/userController';
 import { authenticate, isAdmin } from '../middleware/authMiddleware';
 
 console.log("📂 userRoutes yüklendi");
@@ -15,7 +15,8 @@ router.delete('/:id', authenticate, isAdmin, deleteUser);
 router.put('/guncelle', authenticate, updateProfile);
 router.get('/profil', authenticate, getCurrentUser);
 
-// ✅ PIN güncelleme route'u
+// ✅ PIN routes
+router.get('/pin/status', authenticate, checkPinStatus);
 router.put('/pin', authenticate, updatePin);
 
 export default router;

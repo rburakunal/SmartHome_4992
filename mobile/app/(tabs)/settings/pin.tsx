@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { Colors } from '../../../constants/Colors';
+import { authService } from '../../../service/api';
+import { router } from 'expo-router';
 
 export default function PinScreen() {
   const [currentPin, setCurrentPin] = useState('');
@@ -8,6 +10,20 @@ export default function PinScreen() {
   const [confirmPin, setConfirmPin] = useState('');
   const [error, setError] = useState('');
   const [inputKey, setInputKey] = useState(0);
+  const [hasExistingPin, setHasExistingPin] = useState(false);
+
+  useEffect(() => {
+    // Check if user has an existing PIN
+    const checkExistingPin = async () => {
+      try {
+        const { hasPin } = await authService.checkPinStatus();
+        setHasExistingPin(hasPin);
+      } catch (err) {
+        console.error('Error checking PIN status:', err);
+      }
+    };
+    checkExistingPin();
+  }, []);
 
   const validatePin = (pin: string) => {
     return /^\d{4}$/.test(pin);
@@ -26,12 +42,17 @@ export default function PinScreen() {
     setError('');
 
     // Validate inputs
-    if (!currentPin || !newPin || !confirmPin) {
-      setError('All fields are required');
+    if (hasExistingPin && !currentPin) {
+      setError('Current PIN is required');
       return;
     }
 
-    if (!validatePin(currentPin) || !validatePin(newPin) || !validatePin(confirmPin)) {
+    if (!newPin || !confirmPin) {
+      setError('New PIN and confirmation are required');
+      return;
+    }
+
+    if (!validatePin(newPin) || (hasExistingPin && !validatePin(currentPin)) || !validatePin(confirmPin)) {
       setError('PIN must be exactly 4 digits');
       return;
     }
@@ -42,17 +63,19 @@ export default function PinScreen() {
     }
 
     try {
-      // TODO: Implement API call to change PIN
-      // const response = await api.changePin(currentPin, newPin);
-      
-      // For now, just show a success message
+      await authService.updatePin(currentPin, newPin);
       Alert.alert(
         'Success',
         'PIN successfully changed',
-        [{ text: 'OK', onPress: resetForm }]
+        [{ text: 'OK' }]
       );
-    } catch (err) {
-      setError('Failed to change PIN. Please try again.');
+      // Navigate back after 1 second
+      setTimeout(() => {
+        router.back();
+      }, 1000);
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to change PIN. Please try again.';
+      setError(errorMessage);
     }
   };
 
@@ -60,20 +83,22 @@ export default function PinScreen() {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
         <View style={styles.form} key={inputKey}>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Current PIN</Text>
-            <TextInput
-              key="current-pin"
-              style={styles.input}
-              value={currentPin}
-              onChangeText={setCurrentPin}
-              placeholder="Enter current PIN"
-              placeholderTextColor="#999"
-              keyboardType="numeric"
-              secureTextEntry
-              maxLength={4}
-            />
-          </View>
+          {hasExistingPin && (
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Current PIN</Text>
+              <TextInput
+                key="current-pin"
+                style={styles.input}
+                value={currentPin}
+                onChangeText={setCurrentPin}
+                placeholder="Enter current PIN"
+                placeholderTextColor="#999"
+                keyboardType="numeric"
+                secureTextEntry
+                maxLength={4}
+              />
+            </View>
+          )}
 
           <View style={styles.inputContainer}>
             <Text style={styles.label}>New PIN</Text>
@@ -111,7 +136,7 @@ export default function PinScreen() {
             style={styles.button}
             onPress={handleSubmit}
           >
-            <Text style={styles.buttonText}>Change PIN</Text>
+            <Text style={styles.buttonText}>{hasExistingPin ? 'Change PIN' : 'Set PIN'}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -126,7 +151,6 @@ const styles = StyleSheet.create({
   },
   form: {
     backgroundColor: 'white',
-    marginTop: 20,
     paddingHorizontal: 16,
     paddingVertical: 20,
   },
