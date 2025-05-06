@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useFixedThemeColor } from '@/hooks/useFixedThemeColor';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -12,9 +12,9 @@ interface HeaderProps {
 export default function Header({ showAddButton = true }: HeaderProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const tintColor = useThemeColor({}, 'tint');
-  const backgroundColor = useThemeColor({}, 'background');
-  const textColor = useThemeColor({}, 'text');
+  const tintColor = useFixedThemeColor({}, 'tint');
+  const backgroundColor = useFixedThemeColor({}, 'background');
+  const textColor = useFixedThemeColor({}, 'text');
 
   const handleLogoPress = () => {
     router.push('/(tabs)/dashboard');

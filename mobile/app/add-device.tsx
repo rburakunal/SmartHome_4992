@@ -1,14 +1,14 @@
 import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 import { Stack } from 'expo-router';
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useFixedThemeColor } from '@/hooks/useFixedThemeColor';
 import Header from '@/components/Header';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function AddDeviceScreen() {
   const insets = useSafeAreaInsets();
-  const backgroundColor = useThemeColor({}, 'background');
-  const textColor = useThemeColor({}, 'text');
+  const backgroundColor = useFixedThemeColor({}, 'background');
+  const textColor = useFixedThemeColor({}, 'text');
 
   return (
     <View style={[styles.container, { backgroundColor }]}>
