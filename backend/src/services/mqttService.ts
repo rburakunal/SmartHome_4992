@@ -3,6 +3,7 @@ import mqtt from "mqtt";
 import Alert from "../models/Alert";
 import Device from "../models/Device";
 import DeviceLog from "../models/DeviceLog";
+import Door from "../models/Door";
 import SensorData from "../models/SensorData";
 
 // ✅ global.io için tip tanımı (Socket.IO global tanımı)
@@ -33,6 +34,69 @@ client.on("message", async (topic, message) => {
   try {
     const parsed = JSON.parse(message.toString());
     const topicParts = topic.split("/");
+
+    // 👉 Kapı sensör verisi (örnek: ev/door/{doorId})
+    if (topic.includes("door")) {
+      const doorId = topicParts[2];
+      if (doorId) {
+        try {
+          const door = await Door.findById(doorId);
+          if (door) {
+            // Update door status
+            door.status = parsed.status;
+            await door.save();
+            
+            // Emit to dashboard
+            global.io.emit("door-status-update", {
+              doorId,
+              status: parsed.status
+            });
+            
+            console.log(`[MQTT] Kapı durumu güncellendi → ${door.name}: ${parsed.status}`);
+          }
+        } catch (err: any) {
+          console.error("[MQTT] Kapı güncelleme hatası:", err.message);
+        }
+      }
+    }
+
+    // 👉 Cihaz sensör verisi (örnek: ev/device/{deviceId})
+    if (topic.includes("device")) {
+      const deviceId = topicParts[2];
+      if (deviceId) {
+        try {
+          const device = await Device.findById(deviceId);
+          if (device) {
+            // Update device status
+            let status = parsed.action;
+            if (parsed.action === 'set-intensity' && parsed.value != null) {
+              status = `intensity:${parsed.value}`;
+            }
+            
+            device.status = status;
+            await device.save();
+
+            // Log device update
+            await DeviceLog.create({
+              deviceId,
+              action: status,
+              triggeredBy: 'sensor'
+            });
+            
+            // Emit to dashboard
+            global.io.emit("device-status-update", {
+              deviceId,
+              status,
+              type: device.type
+            });
+            
+            console.log(`[MQTT] Cihaz durumu güncellendi → ${device.name}: ${status}`);
+          }
+        } catch (err: any) {
+          console.error("[MQTT] Cihaz güncelleme hatası:", err.message);
+        }
+      }
+    }
 
     // 👉 Sensör verisi (örnek: ev/sensor/sicaklik)
     if (topic.includes("sensor")) {
