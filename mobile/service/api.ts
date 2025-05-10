@@ -4,7 +4,7 @@ import { API_CONFIG } from './config';
 import { LoginCredentials, RegisterCredentials, AuthResponse, AuthError } from '../types/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: API_CONFIG.BASE_URL,
   timeout: API_CONFIG.TIMEOUT,
   headers: {

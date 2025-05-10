@@ -6,77 +6,111 @@ dotenv.config();
 
 const MONGODB_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/smart-home';
 
+const DEFAULT_OWNER_ID = '645a738ebf4caa7a5c6d67f8';
+
 const devices = [
+  // Switch cihazları
   {
-    _id: 'light-living-room',
-    name: 'Oturma Odası Işığı',
-    type: 'light',
+    _id: new mongoose.Types.ObjectId(),
+    name: 'mainDoorLock',
+    type: 'switch',
     status: 'off',
-    value: 0
+    value: 0,
+    owner: DEFAULT_OWNER_ID
   },
   {
-    _id: 'light-kitchen',
-    name: 'Mutfak Işığı',
-    type: 'light',
+    _id: new mongoose.Types.ObjectId(),
+    name: 'garageDoor',
+    type: 'switch',
     status: 'off',
-    value: 0
+    value: 0,
+    owner: DEFAULT_OWNER_ID
   },
   {
-    _id: 'curtain-living-room',
-    name: 'Oturma Odası Perdesi',
-    type: 'curtain',
+    _id: new mongoose.Types.ObjectId(),
+    name: 'alarmSystem',
+    type: 'switch',
     status: 'off',
-    value: 0
+    value: 0,
+    owner: DEFAULT_OWNER_ID
   },
   {
-    _id: 'fan-living-room',
-    name: 'Oturma Odası Fanı',
-    type: 'fan',
+    _id: new mongoose.Types.ObjectId(),
+    name: 'curtain',
+    type: 'switch',
     status: 'off',
-    value: 0
+    value: 0,
+    owner: DEFAULT_OWNER_ID
   },
   {
-    _id: 'thermostat-living-room',
-    name: 'Oturma Odası Termostat',
-    type: 'thermostat',
+    _id: new mongoose.Types.ObjectId(),
+    name: 'kitchenFan',
+    type: 'switch',
     status: 'off',
-    value: 20
+    value: 0,
+    owner: DEFAULT_OWNER_ID
+  },
+  // Slider cihazları
+  {
+    _id: new mongoose.Types.ObjectId(),
+    name: 'temperature',
+    type: 'intensity',
+    status: 'intensity:22',
+    value: 22,
+    owner: DEFAULT_OWNER_ID
+  },
+  {
+    _id: new mongoose.Types.ObjectId(),
+    name: 'humidity',
+    type: 'intensity',
+    status: 'intensity:45',
+    value: 45,
+    owner: DEFAULT_OWNER_ID
+  },
+  {
+    _id: new mongoose.Types.ObjectId(),
+    name: 'light',
+    type: 'intensity',
+    status: 'intensity:50',
+    value: 50,
+    owner: DEFAULT_OWNER_ID
   }
 ];
 
 async function createDevices() {
   try {
     await mongoose.connect(MONGODB_URI);
-    console.log('MongoDB bağlantısı başarılı');
+    console.log('✅ MongoDB bağlantısı başarılı');
 
-    // Get the first user from the database to set as owner
-    const db = mongoose.connection;
-    const user = await db.collection('users').findOne({});
-    
-    if (!user) {
-      throw new Error('Kullanıcı bulunamadı! Önce bir kullanıcı oluşturun.');
-    }
+    // Önce tüm cihazları sil
+    await Device.deleteMany({});
+    console.log('🗑️ Tüm cihazlar silindi');
 
-    // Create devices with the user as owner
-    for (const device of devices) {
+    // Yeni cihazları oluştur
+    for (const deviceData of devices) {
       try {
-        await Device.create({
-          ...device,
-          owner: user._id
-        });
-        console.log(`✅ Cihaz oluşturuldu: ${device.name}`);
-      } catch (err: any) {
-        if (err.code === 11000) {
-          console.log(`⚠️ Cihaz zaten mevcut: ${device.name}`);
-        } else {
-          console.error(`❌ Cihaz oluşturma hatası (${device.name}):`, err.message);
-        }
+        await Device.create(deviceData);
+        console.log(`➕ Oluşturuldu: ${deviceData.name} (owner: ${deviceData.owner})`);
+      } catch (err) {
+        console.error(`❌ Hata - ${deviceData.name}:`, err);
       }
     }
 
-    console.log('✨ Tüm cihazlar oluşturuldu');
-  } catch (err) {
-    console.error('❌ Hata:', err);
+    // Tüm cihazları kontrol et
+    const allDevices = await Device.find({});
+    console.log('💾 Mevcut cihazlar:', allDevices.map(d => ({
+      id: d._id,
+      name: d.name,
+      owner: d.owner,
+      status: d.status,
+      value: d.value
+    })));
+
+    console.log('✅ Tüm cihazlar başarıyla oluşturuldu');
+    process.exit(0);
+  } catch (error) {
+    console.error('❌ Hata:', error);
+    process.exit(1);
   } finally {
     await mongoose.disconnect();
   }

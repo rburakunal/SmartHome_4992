@@ -9,12 +9,12 @@ import { authenticate } from '../middleware/authMiddleware';
 const router = Router();
 
 // Cihaza komut gönderme
-router.post('/kontrol', authenticate, controlDevice);
+router.post('/kontrol', controlDevice);
 
 // Yeni cihaz ekleme
-router.post('/', authenticate, createDevice);
+router.post('/', createDevice);
 
 // Kullanıcının cihazlarını listeleme
-router.get('/', authenticate, getUserDevices);
+router.get('/', getUserDevices);
 
 export default router;
