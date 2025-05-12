@@ -109,16 +109,16 @@ const KitchenFanSwitch = () => {
 };
 
 const TemperatureSlider = () => {
-  const [value, setValue] = useState(22);
+  const { deviceState, updateDeviceState } = useDevice();
   return (
     <View style={styles.sliderContainer}>
-      <Text style={styles.valueText}>{Math.round(value)}°C</Text>
+      <Text style={styles.valueText}>{Math.round(deviceState.temperature || 22)}°C</Text>
       <Slider
         style={styles.slider}
         minimumValue={16}
         maximumValue={30}
-        value={value}
-        onValueChange={setValue}
+        value={deviceState.temperature || 22}
+        onValueChange={(value) => updateDeviceState('temperature', value)}
         minimumTrackTintColor="#007AFF"
         maximumTrackTintColor="#E5E5EA"
         thumbTintColor="#007AFF"
@@ -132,16 +132,16 @@ const TemperatureSlider = () => {
 };
 
 const HumiditySlider = () => {
-  const [value, setValue] = useState(45);
+  const { deviceState, updateDeviceState } = useDevice();
   return (
     <View style={styles.sliderContainer}>
-      <Text style={styles.valueText}>{Math.round(value)}%</Text>
+      <Text style={styles.valueText}>{Math.round(deviceState.humidity || 45)}%</Text>
       <Slider
         style={styles.slider}
         minimumValue={30}
         maximumValue={70}
-        value={value}
-        onValueChange={setValue}
+        value={deviceState.humidity || 45}
+        onValueChange={(value) => updateDeviceState('humidity', value)}
         minimumTrackTintColor="#007AFF"
         maximumTrackTintColor="#E5E5EA"
         thumbTintColor="#007AFF"
@@ -155,16 +155,16 @@ const HumiditySlider = () => {
 };
 
 const LightSlider = () => {
-  const [value, setValue] = useState(50);
+  const { deviceState, updateDeviceState } = useDevice();
   return (
     <View style={styles.sliderContainer}>
-      <Text style={styles.valueText}>{Math.round(value)}%</Text>
+      <Text style={styles.valueText}>{Math.round(deviceState.light || 50)}%</Text>
       <Slider
         style={styles.slider}
         minimumValue={0}
         maximumValue={100}
-        value={value}
-        onValueChange={setValue}
+        value={deviceState.light || 50}
+        onValueChange={(value) => updateDeviceState('light', value)}
         minimumTrackTintColor="#007AFF"
         maximumTrackTintColor="#E5E5EA"
         thumbTintColor="#007AFF"

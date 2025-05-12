@@ -5,7 +5,7 @@ export const API_CONFIG = {
   // - For iOS simulator, use: 'http://localhost:3000'
   // - For iOS physical devices in Expo Go, use your local IP: 'http://192.168.1.X:3000'
   //   (Replace X with your specific IP address segment)
-  BASE_URL: '',
+  BASE_URL: 'http://192.168.1.50:3000', // Expo Go için local IP
   
   ENDPOINTS: {
     LOGIN: '/auth/login',

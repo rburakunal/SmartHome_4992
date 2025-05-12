@@ -6,6 +6,7 @@ export interface IDevice extends Document {
   name: string;
   type: string;
   status: string;
+  value?: number;
   owner: mongoose.Types.ObjectId;
 }
 
@@ -13,6 +14,7 @@ const DeviceSchema = new Schema<IDevice>({
   name: { type: String, required: true },
   type: { type: String, required: true },
   status: { type: String, default: 'off' },
+  value: { type: Number, default: null },
   owner: { type: Schema.Types.ObjectId, ref: 'User', required: true }
 });
 
