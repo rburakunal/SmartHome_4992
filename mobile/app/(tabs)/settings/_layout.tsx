@@ -22,7 +22,7 @@ function CustomHeader({ title, back = false }: CustomHeaderProps) {
     ]}>
       <View style={styles.container}>
         {back ? (
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity onPress={() => router.push('/(tabs)/settings')} style={styles.backButton}>
             <Ionicons name="chevron-back" size={24} color={Colors.light.tint} />
           </TouchableOpacity>
         ) : (

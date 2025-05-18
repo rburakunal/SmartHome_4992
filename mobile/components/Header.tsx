@@ -20,7 +20,7 @@ export default function Header({ showAddButton = true }: HeaderProps) {
   };
 
   const handleProfilePress = () => {
-    router.push('/settings/account');
+    router.push('/(tabs)/settings/account');
   };
 
   const handleAlertsPress = () => {
