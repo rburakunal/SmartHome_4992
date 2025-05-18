@@ -11,7 +11,7 @@ export default function RootLayout() {
         <StatusBar style="auto" />
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="add-device" options={{ headerShown: false }} />
+          <Stack.Screen name="alerts" options={{ headerShown: false }} />
         </Stack>
       </DeviceProvider>
     </SafeAreaProvider>

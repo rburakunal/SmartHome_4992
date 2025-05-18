@@ -16,13 +16,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="alerts"
-        options={{
-          title: 'Alerts',
-          tabBarIcon: ({ color }: { color: string }) => <FontAwesome name="bell" size={24} color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="control"
         options={{
           title: 'Control',

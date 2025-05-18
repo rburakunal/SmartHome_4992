@@ -308,7 +308,7 @@ export default function AccountSettings() {
         style={styles.input}
         value={formData.currentPassword}
         onChangeText={(text) => setFormData(prev => ({ ...prev, currentPassword: text }))}
-        placeholder="Enter current password to confirm"
+        placeholder="Enter current password"
         placeholderTextColor="#999"
         secureTextEntry
       />

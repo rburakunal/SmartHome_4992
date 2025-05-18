@@ -14,14 +14,17 @@ export default function Header({ showAddButton = true }: HeaderProps) {
   const insets = useSafeAreaInsets();
   const tintColor = useFixedThemeColor({}, 'tint');
   const backgroundColor = useFixedThemeColor({}, 'background');
-  const textColor = useFixedThemeColor({}, 'text');
 
   const handleLogoPress = () => {
     router.push('/(tabs)/dashboard');
   };
 
-  const handleAddDevicePress = () => {
-    router.push('/add-device');
+  const handleProfilePress = () => {
+    router.push('/settings/account');
+  };
+
+  const handleAlertsPress = () => {
+    router.push('/alerts');
   };
 
   return (
@@ -37,13 +40,14 @@ export default function Header({ showAddButton = true }: HeaderProps) {
           <Ionicons name="home" size={24} color={tintColor} style={styles.homeIcon} />
           <Text style={[styles.logoText, { color: tintColor }]}>Smart Home</Text>
         </TouchableOpacity>
-        
-        {showAddButton && (
-          <TouchableOpacity onPress={handleAddDevicePress} style={styles.addButton}>
-            <Ionicons name="add-circle-outline" size={24} color={tintColor} />
-            <Text style={[styles.addButtonText, { color: tintColor }]}>Add Device</Text>
+        <View style={styles.rightButtons}>
+          <TouchableOpacity onPress={handleAlertsPress} style={styles.iconButton}>
+            <Ionicons name="notifications-outline" size={28} color={tintColor} />
           </TouchableOpacity>
-        )}
+          <TouchableOpacity onPress={handleProfilePress} style={styles.iconButton}>
+            <Ionicons name="person-circle-outline" size={28} color={tintColor} />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -73,6 +77,14 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: 20,
     fontWeight: 'bold',
+  },
+  rightButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  iconButton: {
+    padding: 4,
   },
   addButton: {
     flexDirection: 'row',
