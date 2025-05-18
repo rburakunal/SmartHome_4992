@@ -79,7 +79,7 @@ export default function SettingsLayout() {
       <Stack.Screen
         name="about"
         options={{
-          title: 'About / Help',
+          title: 'About',
         }}
       />
       <Stack.Screen

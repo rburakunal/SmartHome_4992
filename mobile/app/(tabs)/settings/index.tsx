@@ -49,7 +49,7 @@ export default function SettingsScreen() {
           onPress={() => router.push('/(tabs)/settings/pin')}
         />
         <SettingItem
-          title="About / Help"
+          title="About"
           icon="information-circle-outline"
           onPress={() => router.push('/(tabs)/settings/about')}
         />
