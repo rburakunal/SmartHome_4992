@@ -40,28 +40,55 @@ client.on('error', (err) => {
 
 // Function to send test messages
 function sendTestMessages() {
-    // Simulate sensor data
+    console.log('Starting comprehensive MQTT test...');
+
+    // Test all sensors
+    console.log('\nTesting sensors...');
     client.publish('home/sensors/temperature', '25.5');
     client.publish('home/sensors/humidity', '60');
     client.publish('home/sensors/gas', 'SAFE');
     client.publish('home/sensors/motion', 'CLEAR');
+    client.publish('home/sensors/light', '800');
 
-    // Simulate control commands
+    // Test all control commands
     setTimeout(() => {
+        console.log('\nTesting controls...');
         client.publish('home/controls/door', 'OPEN');
+        client.publish('home/controls/fan', 'ON');
+        client.publish('home/controls/garage', 'OPEN');
+        client.publish('home/controls/curtain', 'OPEN');
     }, 2000);
 
+    // Test all status updates
     setTimeout(() => {
-        client.publish('home/controls/fan', 'ON');
+        console.log('\nTesting status updates...');
+        client.publish('home/status/door', 'OPENED');
+        client.publish('home/status/fan', 'RUNNING');
+        client.publish('home/status/garage', 'OPENED');
+        client.publish('home/status/curtain', 'OPENED');
     }, 4000);
 
+    // Test opposite controls
     setTimeout(() => {
-        client.publish('home/controls/curtain', 'OPEN');
+        console.log('\nTesting opposite controls...');
+        client.publish('home/controls/door', 'CLOSE');
+        client.publish('home/controls/fan', 'OFF');
+        client.publish('home/controls/garage', 'CLOSE');
+        client.publish('home/controls/curtain', 'CLOSE');
     }, 6000);
+
+    // Test opposite status
+    setTimeout(() => {
+        console.log('\nTesting opposite status...');
+        client.publish('home/status/door', 'CLOSED');
+        client.publish('home/status/fan', 'STOPPED');
+        client.publish('home/status/garage', 'CLOSED');
+        client.publish('home/status/curtain', 'CLOSED');
+    }, 8000);
 
     // Close the connection after all messages are sent
     setTimeout(() => {
-        console.log('Test complete. Closing connection...');
+        console.log('\nTest complete. Closing connection...');
         client.end();
-    }, 8000);
+    }, 10000);
 }
