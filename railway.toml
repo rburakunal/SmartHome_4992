@@ -1,8 +1,11 @@
 [build]
 builder = "nixpacks"
-buildCommand = "npm install"
+buildCommand = "npm install --omit=dev"
 
 [deploy]
-startCommand = "npm start"
+startCommand = "NODE_ENV=production npm start"
 healthcheckTimeout = 100
 restartPolicyType = "on_failure"
+
+[nixpacks]
+start-command = "NODE_ENV=production npm start"
