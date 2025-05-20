@@ -1,10 +1,10 @@
 {
   "name": "smarthome",
   "version": "1.0.0",
-  "main": "backend/local-broker.js",
+  "main": "mobile/expo-router/entry",
   "scripts": {
-    "start": "node backend/local-broker.js",
-    "build": "npm install"
+    "start": "cd mobile && npx expo start --web",
+    "build": "cd mobile && npm install"
   },
   "dependencies": {
     "aedes": "^0.51.3",
