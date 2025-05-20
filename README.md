@@ -1,6 +1,6 @@
 # Smart Home App
 
-This is a smart home management application with a mobile frontend and backend server.
+This is a smart home management application with a mobile frontend, backend server, and ESP32-based IoT integration.
 
 ## Get started
 
@@ -57,6 +57,58 @@ This is a smart home management application with a mobile frontend and backend s
 - Backend server runs on port 3000
 - MongoDB Atlas is used for the database
 - API configuration is in `mobile/service/config.ts`
+- MQTT broker runs on ports:
+  - 1883 (non-secure)
+  - 8883 (secure, requires SSL/TLS certificates)
+
+## ESP32 Integration
+
+The system includes an ESP32 microcontroller that manages various sensors and actuators:
+
+### Sensors
+- Temperature and Humidity (DHT11)
+- Gas Detection
+- Motion Detection (PIR)
+- Light Level
+
+### Actuators
+- Door Control (Servo)
+- Fan Control (Relay)
+- Garage Door (Servo)
+- Curtain Control (Servo)
+
+### MQTT Topics
+
+The ESP32 communicates with the system using the following MQTT topics:
+
+#### Sensors
+- `home/sensors/temperature` - Temperature readings
+- `home/sensors/humidity` - Humidity readings
+- `home/sensors/gas` - Gas detection status
+- `home/sensors/motion` - Motion detection status
+- `home/sensors/light` - Light level readings
+
+#### Controls
+- `home/controls/door` - Door control commands
+- `home/controls/fan` - Fan control commands
+- `home/controls/garage` - Garage door control commands
+- `home/controls/curtain` - Curtain control commands
+
+#### Status
+- `home/status/door` - Door status updates
+- `home/status/fan` - Fan status updates
+- `home/status/garage` - Garage door status updates
+- `home/status/curtain` - Curtain status updates
+
+### SSL/TLS Certificates
+
+To enable secure MQTT communication:
+
+1. Generate SSL/TLS certificates and place them in `backend/certs/`:
+   - `server-key.pem` - Server private key
+   - `server-cert.pem` - Server certificate
+
+2. Update the ESP32 code with the correct certificate if needed
 
 ## Learn more
 

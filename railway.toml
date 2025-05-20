@@ -9,3 +9,17 @@ restartPolicyType = "on_failure"
 
 [nixpacks]
 start-command = "NODE_ENV=production npm start"
+
+[[ports]]
+port = 1883
+protocol = "tcp"
+
+[[ports]]
+port = 8883
+protocol = "tcp"
+
+[env]
+SECURE_KEY = "/etc/ssl/certs/server-key.pem"
+SECURE_CERT = "/etc/ssl/certs/server-cert.pem"
+MQTT_USERNAME = "alexdesouza"
+MQTT_PASSWORD = "Alikocistifa123456"
